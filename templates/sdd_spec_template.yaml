@@ -1,0 +1,120 @@
+# SDD Specification Template
+# Copy this file to your skill directory as SPEC.yaml
+
+spec_version: "1.0"
+module_name: "your_skill_name"
+description: "Brief description of what this skill does"
+version: "1.0.0"
+author: "Your Name"
+date: "YYYY-MM-DD"
+
+# Project context
+context:
+  purpose: "What problem does this skill solve?"
+  target_users: "Who will use this skill?"
+
+# Architecture (optional but recommended)
+architecture:
+  type: "layered"
+  layers:
+    - name: "Layer 1"
+      role: "Description of layer"
+
+# Interface definitions - CORE OF SDD
+interfaces:
+  - name: "YourService"
+    type: "class"
+    description: "Main service class"
+    
+    methods:
+      - name: "example_method"
+        signature: "(param1: str, param2: int) -> dict"
+        description: "What this method does"
+        
+        contract:
+          preconditions:
+            - "param1 is not empty"
+            - "param2 > 0"
+          postconditions:
+            - "returns dictionary with 'result' key"
+        
+        test_cases:
+          - id: "TC-001"
+            name: "Valid input"
+            input:
+              param1: "hello"
+              param2: 42
+            expected:
+              success: true
+              result: "processed"
+              
+          - id: "TC-002"
+            name: "Invalid input"
+            input:
+              param1: ""
+              param2: -1
+            expected:
+              exception: "ValueError"
+
+# Behavior scenarios - BDD style
+scenarios:
+  - id: "E2E-001"
+    name: "Complete user workflow"
+    priority: high
+    
+    given:
+      - condition: "System is initialized"
+      - condition: "User is authenticated"
+      
+    when:
+      - action: "User performs action"
+      - action: "System processes"
+      
+    then:
+      - expectation: "Result is correct"
+      - expectation: "State is updated"
+      
+    quality_attributes:
+      - name: "response_time"
+        threshold: "< 1000ms"
+
+# Acceptance criteria
+acceptance_criteria:
+  functional:
+    - "All unit tests pass"
+    - "Code coverage >= 80%"
+    - "No critical bugs"
+    
+  non_functional:
+    - "Response time < 1000ms"
+    - "Memory usage < 100MB"
+
+# Configuration
+config:
+  environment_variables:
+    required:
+      - name: "REQUIRED_VAR"
+        description: "This variable is required"
+    optional:
+      - name: "OPTIONAL_VAR"
+        description: "This variable is optional"
+        default: "default_value"
+
+# Dependencies
+dependencies:
+  runtime:
+    - package: "example-package"
+      version: ">=1.0.0"
+  development:
+    - package: "pytest"
+      version: ">=7.0.0"
+
+# Testing strategy
+testing_strategy:
+  unit_tests:
+    focus: "Single functions/methods"
+    coverage_target: 80
+  integration_tests:
+    focus: "Module collaboration"
+  acceptance_tests:
+    focus: "End-to-end workflows"

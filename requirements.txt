@@ -1,0 +1,26 @@
+# TDD+SDD Skill Dependencies
+# Python 3.11+
+
+# Core Testing
+pytest>=7.0.0
+pytest-cov>=4.0.0
+pytest-asyncio>=0.21.0
+pytest-mock>=3.10.0
+
+# Code Quality
+black>=23.0.0
+pylint>=2.17.0
+bandit>=1.7.0
+
+# YAML Processing
+PyYAML>=6.0.0
+
+# Type Hints
+typing-extensions>=4.5.0
+
+# CLI Tools
+click>=8.0.0
+rich>=13.0.0
+
+# Development (optional)
+ipython>=8.0.0
