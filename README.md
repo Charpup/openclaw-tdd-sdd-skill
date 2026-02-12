@@ -195,6 +195,14 @@ python tools/validate_spec.py --spec SPEC.yaml --tests tests/
 - [Dual Pyramid Explained](docs/dual-pyramid.md)
 - [MemU Skill Example](examples/memu-skill-example/)
 
+## 🔗 Related Projects
+
+This skill is designed to work seamlessly with:
+
+- [**planning-with-files**](https://github.com/OthmanAdi/planning-with-files) - File-based planning for complex tasks
+  - TDD-SDD automatically creates and manages `task_plan.md`, `progress.md`, `findings.md`
+  - Both skills together provide a complete development methodology for OpenClaw agents
+
 ## 🤝 Contributing
 
 1. Fork the repository
