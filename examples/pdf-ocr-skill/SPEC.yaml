@@ -1,0 +1,157 @@
+---
+name: pdf-ocr-skill
+version: "1.0.0"
+description: Extract text from PDF documents using OCR technology
+author: OpenClaw
+metadata:
+  tags: ["pdf", "ocr", "text-extraction"]
+  language: python
+  dependencies: ["pymupdf", "pytesseract", "pillow"]
+---
+
+# PDF OCR Skill
+
+Extract text from PDF documents using OCR technology.
+
+## Interfaces
+
+### PDFProcessor
+
+Process PDF documents and extract images/text layers.
+
+**Methods:**
+- `open_document(path: str) -> DocumentHandle`
+- `get_page_count() -> int`
+- `extract_page_as_image(page_num: int) -> PIL.Image`
+- `extract_text_layer(page_num: int) -> str`
+- `close_document()`
+
+**Contracts:**
+- **Preconditions:**
+  - File must exist at given path
+  - File must be valid PDF format
+- **Postconditions:**
+  - Document handle is valid and ready for operations
+  - Resources are properly allocated
+
+### OCREngine
+
+Perform OCR on images to extract text.
+
+**Methods:**
+- `initialize(engine: str = "tesseract") -> None`
+- `process_image(image: PIL.Image) -> OCRResult`
+- `get_supported_languages() -> List[str]`
+- `set_language(lang: str) -> None`
+
+**Contracts:**
+- **Preconditions:**
+  - Engine must be initialized before processing
+  - Image must be valid PIL Image object
+- **Postconditions:**
+  - OCRResult contains extracted text
+  - Confidence scores are provided
+
+### TextExtractor
+
+High-level interface combining PDF processing and OCR.
+
+**Methods:**
+- `extract_from_pdf(path: str, use_ocr: bool = True) -> ExtractionResult`
+- `extract_from_page(path: str, page_num: int) -> PageResult`
+- `batch_extract(paths: List[str]) -> List[ExtractionResult]`
+
+**Contracts:**
+- **Preconditions:**
+  - All input files must exist
+  - Valid PDF format
+- **Postconditions:**
+  - Text content is extracted
+  - Page numbers are preserved
+
+## Scenarios
+
+### Scenario 1: Extract text from scanned PDF
+
+**Given** a scanned PDF without text layer  
+**When** I call `extract_from_pdf(path)`  
+**Then** the system should:
+- Convert each page to image
+- Perform OCR on each image
+- Return extracted text with page numbers
+- Provide confidence scores
+
+### Scenario 2: Extract from PDF with existing text layer
+
+**Given** a PDF with embedded text layer  
+**When** I call `extract_from_pdf(path, use_ocr=False)`  
+**Then** the system should:
+- Extract text directly from PDF
+- Skip OCR processing
+- Return text faster than OCR method
+
+### Scenario 3: Process multi-page document
+
+**Given** a 100-page PDF document  
+**When** I process the document  
+**Then** the system should:
+- Handle all pages
+- Maintain page order
+- Return results within 30 seconds
+- Report any failed pages
+
+### Scenario 4: Batch process multiple files
+
+**Given** a list of 10 PDF files  
+**When** I call `batch_extract(paths)`  
+**Then** the system should:
+- Process all files
+- Return results for each file
+- Continue processing if one file fails
+- Report progress
+
+## Test Cases
+
+### TC-001: Open valid PDF
+- **Input:** Path to existing PDF file
+- **Expected:** DocumentHandle with correct page count
+- **Type:** Unit test
+
+### TC-002: Open non-existent file
+- **Input:** Path to non-existent file
+- **Expected:** FileNotFoundError raised
+- **Type:** Unit test
+
+### TC-003: OCR on clear text image
+- **Input:** High-quality image with clear text
+- **Expected:** Accurate text extraction (>95% accuracy)
+- **Type:** Integration test
+
+### TC-004: Full extraction pipeline
+- **Input:** Scanned PDF document
+- **Expected:** Complete text extraction with metadata
+- **Type:** Acceptance test
+
+### TC-005: Batch processing
+- **Input:** List of 5 PDF files
+- **Expected:** 5 extraction results, all successful
+- **Type:** Acceptance test
+
+### TC-006: Language support
+- **Input:** PDF with Chinese text
+- **Expected:** Chinese characters correctly extracted
+- **Type:** Integration test
+
+## Performance Criteria
+
+- Single page OCR: < 2 seconds
+- 10-page document: < 15 seconds
+- Memory usage: < 500MB for 100-page document
+- Accuracy: > 90% for clear text
+
+## Error Handling
+
+- **FileNotFoundError:** File doesn't exist
+- **InvalidPDFError:** Corrupted or invalid PDF
+- **OCRError:** OCR processing failed
+- **MemoryError:** Document too large for available memory

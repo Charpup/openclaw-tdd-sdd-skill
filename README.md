@@ -2,6 +2,10 @@
 
 > A production-ready skill framework combining Test-Driven Development (TDD) for implementation layer with Spec-Driven Development (SDD) for AI Agent behavior layer.
 
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/Charpup/openclaw-tdd-sdd-skill/releases)
+[![OpenClaw](https://img.shields.io/badge/OpenClaw-Skill-green.svg)](https://docs.openclaw.ai)
+[![License](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
+
 ## 🎯 Overview
 
 This skill provides a complete development workflow for OpenClaw agents that bridges traditional software engineering practices with AI-native development patterns.
@@ -34,30 +38,54 @@ cd openclaw-tdd-sdd-skill
 pip install -r requirements.txt
 ```
 
-### Creating a New Skill with TDD+SDD
+### Using as an OpenClaw Skill
 
-```bash
-# Use the initialization tool
-python tools/init_skill.py --name my-new-skill --path ../my-new-skill
+Once installed, Galatea can use this skill automatically:
 
-# This creates:
-# ├── SPEC.yaml              # SDD specification
-# ├── pytest.ini             # Test configuration
-# ├── lib/                   # Implementation
-# ├── tools/                 # CLI tools
-# └── tests/                 # Test suites
+```
+User: "Create a new skill for PDF text extraction"
+
+Galatea automatically:
+1. Calls tdd_sdd.init_workflow(skill_name="pdf-extractor")
+2. Calls tdd_sdd.create_spec(requirements="...")
+3. Calls tdd_sdd.generate_tests_from_spec()
+4. Guides through Red-Green-Refactor cycles
+5. Calls tdd_sdd.validate_implementation()
+```
+
+### Manual Usage
+
+```python
+from lib.workflow import init_workflow, create_spec, generate_tests_from_spec
+
+# Initialize workflow
+init_workflow(skill_name="my-skill")
+
+# Create specification
+create_spec(
+    skill_name="my-skill",
+    requirements="Extract text from PDF documents"
+)
+
+# Generate tests
+generate_tests_from_spec(spec_path="./SPEC.yaml")
 ```
 
 ## 📁 Project Structure
 
 ```
 tdd-sdd-skill/
+├── SKILL.md                 # OpenClaw skill manifest (REQUIRED)
 ├── README.md                # This file
 ├── LICENSE                  # MIT License
 ├── requirements.txt         # Python dependencies
 ├── pytest.ini              # pytest configuration
 │
 ├── lib/                    # Core libraries
+│   ├── __init__.py
+│   ├── workflow.py         # Agent-callable functions ⭐ NEW
+│   ├── state_machine.py    # TDD state enforcement ⭐ NEW
+│   ├── planning_integration.py  # planning-with-files integration ⭐ NEW
 │   ├── sdd_validator.py    # SPEC.yaml validation
 │   ├── test_generator.py   # Test generation from spec
 │   └── coverage_reporter.py # Coverage reporting
@@ -72,8 +100,14 @@ tdd-sdd-skill/
 │   ├── test_template.py
 │   └── skill_manifest_template.json
 │
-├── examples/               # Example implementations
-│   └── memu-skill-example/ # Reference implementation
+├── examples/               # Example implementations ⭐ NEW
+│   └── pdf-ocr-skill/      # Complete TDD+SDD example
+│       ├── SPEC.yaml
+│       ├── task_plan.md
+│       ├── progress.md
+│       ├── findings.md
+│       ├── lib/
+│       └── tests/
 │
 └── tests/                  # Self-tests
     ├── unit/
