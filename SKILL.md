@@ -1,20 +1,11 @@
 ---
 name: tdd-sdd-development
-version: "1.1.0"
-description: Implements TDD+SDD dual-pyramid workflow for OpenClaw skill development. Manages SPEC.yaml creation, test generation, and Red-Green-Refactor cycles. Use when building production-ready skills that require test coverage and maintainability.
-homepage: https://github.com/Charpup/openclaw-tdd-sdd-skill
-user-invocable: true
-metadata:
-  openclaw:
-    os: ["darwin", "linux", "win32"]
-    requires:
-      skills:
-        - planning-with-files >= 2.10.0
-    extends:
-      - planning-with-files
+description: TDD+SDD dual-pyramid workflow for OpenClaw skill development. Manages SPEC.yaml creation, test generation, and Red-Green-Refactor cycles. Use when building production-ready skills requiring test coverage and maintainability. Triggers on "TDD", "SDD", "test driven", "spec driven", "SPEC.yaml".
 ---
 
 # TDD+SDD Development Workflow
+
+**Version:** 1.1.0 | **Homepage:** https://github.com/Charpup/openclaw-tdd-sdd-skill
 
 Develop OpenClaw skills using Test-Driven Development (TDD) and Spec-Driven Development (SDD) best practices. This skill provides a structured workflow that enforces test coverage, interface contracts, and behavior-driven scenarios.
 
