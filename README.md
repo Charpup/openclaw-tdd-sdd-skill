@@ -1,228 +1,306 @@
-# TDD+SDD Dual Pyramid Skill for OpenClaw
+# TDD+SDD Development Skill for OpenClaw
 
-> A production-ready skill framework combining Test-Driven Development (TDD) for implementation layer with Spec-Driven Development (SDD) for AI Agent behavior layer.
+[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](https://github.com/Charpup/openclaw-tdd-sdd-skill/releases/tag/v2.1.0)
+[![OpenClaw Skill](https://img.shields.io/badge/OpenClaw-Skill-4CAF50.svg)](https://openclaw.ai)
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![evals](https://img.shields.io/badge/evals-3%20cases-blueviolet.svg)](evals/evals.json)
 
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/Charpup/openclaw-tdd-sdd-skill/releases)
-[![OpenClaw](https://img.shields.io/badge/OpenClaw-Skill-green.svg)](https://docs.openclaw.ai)
-[![License](https://img.shields.io/badge/license-MIT-yellow.svg)](LICENSE)
-
-## 🎯 Overview
-
-This skill provides a complete development workflow for OpenClaw agents that bridges traditional software engineering practices with AI-native development patterns.
-
-### The Dual Pyramid Model
-
-```
-SDD Pyramid (Behavior Layer - AI Agent)
-    ├── End-to-End Acceptance (Agent tasks)
-    ├── Module Collaboration Tests
-    └── Tool Function Contracts
-
-TDD Pyramid (Implementation Layer - Traditional)
-    ├── Interface Contract Tests
-    ├── Module Integration
-    └── Function-Level Unit Tests
-```
-
-## 🚀 Quick Start
-
-### Installation
-
-```bash
-# Clone the skill to your OpenClaw workspace
-cd ~/.openclaw/workspace/skills
-git clone https://github.com/Charpup/openclaw-tdd-sdd-skill.git
-
-# Install dependencies
-cd openclaw-tdd-sdd-skill
-pip install -r requirements.txt
-```
-
-### Using as an OpenClaw Skill
-
-Once installed, Galatea can use this skill automatically:
-
-```
-User: "Create a new skill for PDF text extraction"
-
-Galatea automatically:
-1. Calls tdd_sdd.init_workflow(skill_name="pdf-extractor")
-2. Calls tdd_sdd.create_spec(requirements="...")
-3. Calls tdd_sdd.generate_tests_from_spec()
-4. Guides through Red-Green-Refactor cycles
-5. Calls tdd_sdd.validate_implementation()
-```
-
-### Manual Usage
-
-```python
-from lib.workflow import init_workflow, create_spec, generate_tests_from_spec
-
-# Initialize workflow
-init_workflow(skill_name="my-skill")
-
-# Create specification
-create_spec(
-    skill_name="my-skill",
-    requirements="Extract text from PDF documents"
-)
-
-# Generate tests
-generate_tests_from_spec(spec_path="./SPEC.yaml")
-```
-
-## 📁 Project Structure
-
-```
-tdd-sdd-skill/
-├── SKILL.md                 # OpenClaw skill manifest (REQUIRED)
-├── README.md                # This file
-├── LICENSE                  # MIT License
-├── requirements.txt         # Python dependencies
-├── pytest.ini              # pytest configuration
-│
-├── lib/                    # Core libraries
-│   ├── __init__.py
-│   ├── workflow.py         # Agent-callable functions ⭐ NEW
-│   ├── state_machine.py    # TDD state enforcement ⭐ NEW
-│   ├── planning_integration.py  # planning-with-files integration ⭐ NEW
-│   ├── sdd_validator.py    # SPEC.yaml validation
-│   ├── test_generator.py   # Test generation from spec
-│   └── coverage_reporter.py # Coverage reporting
-│
-├── tools/                  # CLI tools
-│   ├── init_skill.py       # Initialize new skill
-│   ├── validate_spec.py    # Validate SPEC.yaml
-│   └── run_tests.py        # Run test suite
-│
-├── templates/              # Starter templates
-│   ├── sdd_spec_template.yaml
-│   ├── test_template.py
-│   └── skill_manifest_template.json
-│
-├── examples/               # Example implementations ⭐ NEW
-│   └── pdf-ocr-skill/      # Complete TDD+SDD example
-│       ├── SPEC.yaml
-│       ├── task_plan.md
-│       ├── progress.md
-│       ├── findings.md
-│       ├── lib/
-│       └── tests/
-│
-└── tests/                  # Self-tests
-    ├── unit/
-    ├── integration/
-    └── acceptance/
-```
-
-## 📝 SPEC.yaml Format
-
-The SDD specification defines behavior through scenarios and contracts:
-
-```yaml
-spec_version: "1.0"
-module_name: "example_skill"
-description: "Example skill demonstrating TDD+SDD"
-
-interfaces:
-  - name: "ExampleService"
-    type: "class"
-    
-    methods:
-      - name: "process"
-        signature: "(input: str) -> dict"
-        description: "Process input and return result"
-        
-        contract:
-          preconditions:
-            - "input is not empty"
-          postconditions:
-            - "result contains 'output' key"
-        
-        test_cases:
-          - id: "TC-001"
-            name: "Valid input"
-            input: {input: "hello"}
-            expected: {output: "HELLO"}
-
-scenarios:
-  - id: "E2E-001"
-    name: "Complete workflow"
-    given:
-      - condition: "Service is initialized"
-    when:
-      - action: "Call process()"
-    then:
-      - expectation: "Result is valid"
-
-acceptance_criteria:
-  functional:
-    - "All unit tests pass"
-    - "Code coverage >= 80%"
-```
-
-## 🧪 Testing Workflow
-
-### 1. Write SPEC.yaml First (SDD)
-
-Define behavior through scenarios before writing code.
-
-### 2. Generate Test Stubs
-
-```bash
-python tools/generate_tests.py --spec SPEC.yaml --output tests/
-```
-
-### 3. Implement to Make Tests Pass (TDD)
-
-```bash
-# Red: Write failing test
-# Green: Make it pass
-# Refactor: Improve code
-
-pytest tests/unit -v
-```
-
-### 4. Validate Against SPEC
-
-```bash
-python tools/validate_spec.py --spec SPEC.yaml --tests tests/
-```
-
-## 🎓 Learning Resources
-
-- [TDD+SDD Research Report](docs/research-report.md)
-- [Dual Pyramid Explained](docs/dual-pyramid.md)
-- [MemU Skill Example](examples/memu-skill-example/)
-
-## 🔗 Related Projects
-
-This skill is designed to work seamlessly with:
-
-- [**planning-with-files**](https://github.com/OthmanAdi/planning-with-files) - File-based planning for complex tasks
-  - TDD-SDD automatically creates and manages `task_plan.md`, `progress.md`, `findings.md`
-  - Both skills together provide a complete development methodology for OpenClaw agents
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Write tests for your changes
-4. Ensure all tests pass
-5. Commit your changes (`git commit -m 'Add amazing feature'`)
-6. Push to the branch (`git push origin feature/amazing-feature`)
-7. Open a Pull Request
-
-## 📄 License
-
-MIT License - see [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- OpenClaw community for the agent framework
-- MemU team for the memory system that inspired this workflow
-- Master Charpup for the TDD+SDD concept and validation
+> TDD+SDD dual-pyramid workflow with OpenSpec-inspired **delta specs** and **brownfield** support. Manages SPEC.yaml creation, test generation, Red-Green-Refactor cycles, and change tracking — for both new and existing OpenClaw skills.
 
 ---
 
-*Built with ❤️ for the OpenClaw ecosystem*
+## AI Agent Quick Reference
+
+```yaml
+# Skill identity (SKILL.md frontmatter)
+name: tdd-sdd-development
+version: "2.1.0"
+triggers:
+  - "TDD"
+  - "SDD"
+  - "test driven"
+  - "spec driven"
+  - "SPEC.yaml"
+  - "delta spec"
+  - "brownfield"
+  - "Red-Green-Refactor"
+
+# Runtime requirements
+requires:
+  bins: [python3, pytest]
+  env: []
+
+# Install
+run: pip3 install pytest pytest-cov pytest-asyncio pytest-mock pyyaml click rich
+```
+
+**When to invoke:**
+- Creating a new OpenClaw skill from scratch (greenfield)
+- Adding features to an existing skill with change tracking (brownfield + delta specs)
+- Any work requiring test coverage, SPEC.yaml, or Red-Green-Refactor cycles
+- Refactoring with guaranteed test coverage ≥ 80%
+
+**When NOT to invoke:**
+- Simple bug fixes < 5 lines
+- Documentation-only changes
+- Quick prototypes with no maintenance requirement
+
+---
+
+## What's in v2.0+
+
+### Delta Specs (OpenSpec-inspired)
+
+Track changes to existing systems without touching the base spec:
+
+```yaml
+delta_specs:
+  added:
+    - requirement_id: AUTH-002
+      description: "OAuth 2.0 login support"
+      scenarios:
+        - name: "oauth login"
+          given: "valid OAuth token"
+          when: "user authenticates"
+          then: "session created, JWT returned"
+  modified:
+    - requirement_id: AUTH-001
+      description: "Password login now also accepts OAuth"
+      previous: "Password-only login"
+  removed:
+    - requirement_id: AUTH-000
+      reason: "Legacy token system replaced by JWT"
+```
+
+### Brownfield Mode
+
+Start from existing code — auto-detect and generate base specs:
+
+```python
+tdd_sdd.init_brownfield(project_dir="./existing-skill")
+# → scans src/, generates base SPEC.yaml from code signatures
+# → ready for delta spec additions
+```
+
+### Artifact Flow
+
+OpenSpec-inspired full design pipeline for complex features:
+
+```
+proposal.md → specs/ → design.md → tasks.md → implement → archive
+   (why)       (what)    (how)      (steps)
+```
+
+### Archive & Spec Evolution
+
+Complete a change, merge deltas into main SPEC, move artifacts to `archive/`:
+
+```python
+tdd_sdd.archive_change("add-oauth")
+# → merges delta_specs into requirements
+# → moves changes/add-oauth/ to changes/archive/2026-02-25-add-oauth/
+# → SPEC.yaml is now the single source of truth
+```
+
+---
+
+## Core Workflows
+
+### Workflow A: Greenfield (new skill)
+
+```
+SPEC.yaml → test stubs (RED) → implementation (GREEN) → coverage check → REFACTOR
+```
+
+```python
+tdd_sdd.init_workflow(skill_name="rate-limiter")
+tdd_sdd.create_spec(requirements="Limit API calls to 100/min per user, 429 on overflow")
+tdd_sdd.generate_tests_from_spec(spec_path="./SPEC.yaml")
+tdd_sdd.run_tests()         # RED: tests fail (not implemented)
+# ... implement ...
+tdd_sdd.run_tests()         # GREEN: tests pass
+tdd_sdd.check_coverage()    # must be ≥ 80%
+```
+
+### Workflow B: Brownfield (existing skill)
+
+```
+detect code → base SPEC → delta specs → tests → implement → archive
+```
+
+```python
+tdd_sdd.init_brownfield(project_dir="./auth-service")
+tdd_sdd.create_delta_spec(
+    change_name="add-oauth",
+    added=["OAuth 2.0 support"],
+    modified=["session handling"],
+    removed=["legacy token auth"],
+)
+tdd_sdd.generate_tests()
+# ... implement ...
+tdd_sdd.archive_change("add-oauth")
+```
+
+### Workflow C: Artifact Flow (complex feature)
+
+```python
+tdd_sdd.init_artifact_flow(skill_name="payment-gateway")
+tdd_sdd.create_proposal(intent="Add Stripe integration",
+                         scope={"in": "payment processing", "out": "tax calculation"})
+tdd_sdd.create_specs_from_proposal()
+tdd_sdd.create_design_doc()
+tdd_sdd.create_task_list()
+# ... implement ...
+tdd_sdd.archive_change()
+```
+
+---
+
+## SPEC.yaml Format
+
+### Standard (v1.x compatible)
+
+```yaml
+specification:
+  name: "rate-limiter"
+  version: "1.0.0"
+
+requirements:
+  - id: RATE-001
+    description: "Limit API calls to 100 per minute per user"
+    scenarios:
+      - name: "within limit"
+        given: "user has made 99 calls this minute"
+        when: "user makes one more call"
+        then: "call succeeds, counter = 100"
+      - name: "over limit"
+        given: "user has made 100 calls this minute"
+        when: "user makes another call"
+        then: "HTTP 429 Too Many Requests returned"
+```
+
+### With Delta Specs (v2.x)
+
+```yaml
+specification:
+  name: "auth-service"
+  version: "2.0.0"
+
+requirements:        # existing, unchanged
+  - id: AUTH-001
+    description: "Password login"
+
+delta_specs:         # new in v2.0
+  added:
+    - id: AUTH-002
+      description: "OAuth login"
+  modified:
+    - id: AUTH-001
+      description: "Password or OAuth login"
+      previous: "Password login"
+  removed:
+    - id: AUTH-000
+      reason: "Legacy tokens deprecated"
+```
+
+---
+
+## Project Structure
+
+```
+my-skill/
+├── SKILL.md              # OpenClaw skill manifest
+├── SPEC.yaml             # Requirements (source of truth)
+├── requirements.txt
+├── pytest.ini
+│
+├── lib/                  # Implementation
+│   ├── workflow.py       # Agent-callable functions
+│   ├── state_machine.py  # TDD state enforcement
+│   └── ...
+│
+├── tools/                # CLI tools
+│   ├── validate_spec.py
+│   └── run_tests.py
+│
+├── templates/
+│   ├── sdd_spec_template.yaml
+│   └── test_template.py
+│
+├── changes/              # Active change tracking (brownfield)
+│   ├── add-oauth/        # Active change
+│   └── archive/          # Completed changes
+│
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   └── acceptance/
+│
+└── evals/
+    └── evals.json        # Skill-creator standard test cases
+```
+
+---
+
+## Critical Rules
+
+1. **Spec-first always** — never write implementation before SPEC.yaml is complete
+2. **Delta specs for changes** — use `delta_specs` when modifying existing functionality
+3. **80% coverage minimum** — `check_coverage(threshold=80.0)` must pass before done
+4. **Archive on completion** — always `archive_change()` to maintain spec history
+5. **Brownfield detection** — for existing projects, always start with `init_brownfield()`
+
+---
+
+## Evals
+
+Test cases in [`evals/evals.json`](evals/evals.json):
+
+| ID | Scenario | Expected Trigger |
+|----|----------|-----------------|
+| 1 | Create SPEC.yaml for a rate-limiter skill (greenfield) | ✅ Yes |
+| 2 | Create delta spec for adding OAuth to existing auth service | ✅ Yes |
+| 3 | Fix a typo in a variable name | ❌ No |
+
+---
+
+## Version History
+
+| Version | Changes |
+|---------|---------|
+| **v2.1.0** | Add `metadata.openclaw` compliance; add `evals/evals.json` (3 cases) |
+| **v2.0.0** | Delta specs, brownfield mode, artifact flow, archive & spec evolution |
+| **v1.1.0** | planning-with-files integration, state machine |
+| **v1.0.0** | Initial TDD+SDD dual-pyramid workflow |
+
+---
+
+## Integration: TriadDev Golden Triangle
+
+```
+📋 planning-with-files   →   📊 task-workflow   →   🧪 tdd-sdd-development  ← (this skill)
+  (task_plan.md)              (batch schedule)         (SPEC.yaml + tests)
+```
+
+Use [triadev](https://github.com/Charpup/triadev) to orchestrate all three automatically.
+
+---
+
+## Related Projects
+
+- [planning-with-files](https://github.com/OthmanAdi/planning-with-files) — File-based planning (Manus pattern)
+- [task-workflow](https://github.com/Charpup/openclaw-task-workflow) — DAG task scheduling
+- [triadev](https://github.com/Charpup/triadev) — Golden Triangle orchestrator
+- [OpenSpec](https://github.com/Fission-AI/OpenSpec) — Inspiration for delta specs
+
+## Testing
+
+```bash
+pip install -r requirements.txt
+pytest tests/ -v --cov=lib --cov-report=term-missing
+```
+
+## License
+
+MIT — [Charpup](https://github.com/Charpup)
