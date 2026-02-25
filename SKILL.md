@@ -1,432 +1,369 @@
 ---
 name: tdd-sdd-development
-description: TDD+SDD dual-pyramid workflow for OpenClaw skill development. Manages SPEC.yaml creation, test generation, and Red-Green-Refactor cycles. Use when building production-ready skills requiring test coverage and maintainability. Triggers on "TDD", "SDD", "test driven", "spec driven", "SPEC.yaml".
+description: TDD+SDD dual-pyramid workflow with OpenSpec-inspired delta specs and brownfield support. Manages SPEC.yaml creation, test generation, Red-Green-Refactor cycles, and change tracking. Use when building production-ready skills requiring test coverage, maintainability, or working with existing codebases. Triggers on "TDD", "SDD", "test driven", "spec driven", "SPEC.yaml", "delta spec", "brownfield".
 ---
 
-# TDD+SDD Development Workflow
+# TDD+SDD Development Workflow v2.0
 
-**Version:** 1.1.0 | **Homepage:** https://github.com/Charpup/openclaw-tdd-sdd-skill
+**Version:** 2.0.0 | **Homepage:** https://github.com/Charpup/openclaw-tdd-sdd-skill
 
-Develop OpenClaw skills using Test-Driven Development (TDD) and Spec-Driven Development (SDD) best practices. This skill provides a structured workflow that enforces test coverage, interface contracts, and behavior-driven scenarios.
+Develop OpenClaw skills using Test-Driven Development (TDD) and Spec-Driven Development (SDD) best practices. Now with **OpenSpec-inspired** features: delta specs for brownfield development, artifact-based workflow, and change tracking.
+
+## What's New in v2.0
+
+### 🆕 Delta Specs (OpenSpec-Inspired)
+Describe changes to existing systems:
+```yaml
+delta_specs:
+  added:
+    - requirement_id: NEW-001
+      description: "New authentication method"
+  modified:
+    - requirement_id: AUTH-001  
+      description: "Updated from 30min to 15min timeout"
+  removed:
+    - requirement_id: OLD-001
+      reason: "Replaced by NEW-001"
+```
+
+### 🆕 Brownfield Mode
+Work with existing codebases:
+```bash
+# Detect and spec existing code
+tdd_sdd.init_brownfield(project_dir="./existing-project")
+```
+
+### 🆕 Artifact Flow (Optional)
+Enhanced workflow with separated artifacts:
+```
+proposal.md → specs/ → design.md → tasks.md → implement
+   (why)      (what)    (how)     (steps)    (code)
+```
+
+### 🆕 Archive & Completion
+Track spec evolution:
+```bash
+tdd_sdd.archive_change(change_name="add-oauth")
+# Merges deltas into main specs, moves to archive/
+```
 
 ## When to Use This Skill
 
 **ALWAYS use for:**
 - Creating a new OpenClaw skill from scratch
-- Adding a new feature to an existing skill
-- Refactoring skill implementation with test coverage
-- Any skill that will be shared or maintained long-term
+- Adding features to **existing** skills (brownfield)
+- Refactoring with test coverage
+- Any skill requiring long-term maintenance
+
+**Use DELTA SPECS when:**
+- Modifying existing functionality
+- Deprecating old features
+- Migrating from old patterns
+
+**Use ARTIFACT FLOW when:**
+- Complex features needing design docs
+- Team collaboration
+- Requirements exploration needed
 
 **SKIP for:**
-- Simple bug fixes (< 5 lines of code)
+- Simple bug fixes (< 5 lines)
 - Documentation-only changes
-- Quick prototypes or proof-of-concepts
-- One-time scripts
+- Quick prototypes
 
-## Core Workflow
+## Core Workflows
 
-The TDD+SDD workflow follows a **dual-pyramid model**:
+### Workflow A: Greenfield (New Project) - Default
+Traditional TDD+SDD for new skills:
 
 ```
-SDD Pyramid (Behavior Layer - AI Agent)
-  └── End-to-End Acceptance Tests
-  └── Module Collaboration Tests
-  └── Tool Function Contracts
-
-TDD Pyramid (Implementation Layer - Traditional)
-  └── Interface Contract Tests
-  └── Module Integration Tests
-  └── Function-Level Unit Tests
+SPEC.yaml → Tests → RED → GREEN → REFACTOR → Validate
 ```
 
-### Phase 1: Spec Definition (SDD)
+### Workflow B: Brownfield (Existing Project) - NEW
+Delta specs for existing codebases:
 
-Define behavior through SPEC.yaml before writing any code.
+```
+Detect Code → Generate Base Specs → Delta Specs → Tests → Implement → Archive
+```
 
-1. **Call `create_spec(skill_name, requirements)`**
-   - Generates SPEC.yaml from user requirements
-   - Defines interfaces, contracts, preconditions, and postconditions
-   - Creates BDD-style scenarios (Given-When-Then)
-   - Returns: `{"spec_path": "...", "interfaces_count": N, "scenarios_count": N}`
+### Workflow C: Artifact Flow (Complex) - NEW
+OpenSpec-inspired full workflow:
 
-2. **Call `validate_spec(spec_path)`**
-   - Validates SPEC.yaml against SDD schema
-   - Checks for missing contracts or scenarios
-   - Returns: `{"is_valid": true/false, "errors": [...], "warnings": [...]}`
+```
+proposal.md → specs/ → design.md → tasks.md → Tests → RED → GREEN → Archive
+```
 
-**Output:** Complete SPEC.yaml ready for test generation
+## Quick Start
 
-### Phase 2: Test Generation (TDD Setup)
+### Greenfield (Default)
+```python
+tdd_sdd.init_workflow(skill_name="my-skill")
+tdd_sdd.create_spec(requirements="Extract text from PDFs")
+tdd_sdd.generate_tests()
+tdd_sdd.run_tests()  # RED
+tdd_sdd.run_tests()  # GREEN (after implementation)
+```
 
-Generate test stubs from the specification.
+### Brownfield (NEW)
+```python
+tdd_sdd.init_brownfield(project_dir="./existing-skill")
+tdd_sdd.create_delta_spec(
+    change_name="add-dark-mode",
+    added=["support for dark theme"],
+    modified=["color variables"]
+)
+tdd_sdd.generate_tests()
+# ... implement ...
+tdd_sdd.archive_change("add-dark-mode")
+```
 
-3. **Call `generate_tests_from_spec(spec_path, output_dir)`**
-   - Creates test files organized by pyramid level:
-     - `tests/unit/` - Function-level unit tests
-     - `tests/integration/` - Module collaboration tests
-     - `tests/acceptance/` - End-to-end BDD scenarios
-   - Generates fixtures and mocks based on contracts
-   - Returns: `{"test_files": [...], "total_tests": N, "status": "generated"}`
+### Artifact Flow (NEW)
+```python
+tdd_sdd.init_artifact_flow(skill_name="complex-feature")
+tdd_sdd.create_proposal(intent="Add real-time collaboration")
+tdd_sdd.create_specs_from_proposal()
+tdd_sdd.create_design_doc()
+tdd_sdd.create_task_list()
+# ... implement ...
+tdd_sdd.archive_change()
+```
 
-**Output:** Complete test suite ready for Red-Green-Refactor cycle
+## SPEC.yaml Formats
 
-### Phase 3: Implementation (Red-Green-Refactor)
-
-Iterative development following TDD principles.
-
-4. **For each test file, repeat the cycle:**
-   
-   **RED Phase:**
-   - Call `run_tests(test_path)`
-   - Tests should FAIL (expected, as no implementation yet)
-   - Record failures in progress tracking
-   
-   **GREEN Phase:**
-   - Write minimal implementation to pass tests
-   - Call `run_tests(test_path)` again
-   - Tests should PASS
-   - Update progress tracking
-   
-   **REFACTOR Phase:**
-   - Improve code quality while keeping tests green
-   - Call `suggest_refactoring(project_dir)` for recommendations
-   - Run tests to verify no regressions
-
-5. **Call `check_coverage(project_dir)`**
-   - Runs full test suite with coverage analysis
-   - Returns: `{"coverage": 85.5, "status": "acceptable"}`
-   - Acceptance threshold: >= 80% coverage
-
-### Phase 4: Final Validation
-
-Ensure implementation meets all specifications.
-
-6. **Call `validate_implementation(spec_path, project_dir)`**
-   - Verifies all SPEC.yaml requirements are implemented
-   - Checks test coverage meets threshold
-   - Validates no missing interfaces or scenarios
-   - Returns: `{"passed": true/false, "failures": [...], "coverage_met": true/false}`
-
-7. **Call `finalize_workflow()`**
-   - Updates planning files with final status
-   - Generates summary report
-   - Archives development artifacts
-
-## Integration with planning-with-files
-
-This skill **requires** and **extends** `planning-with-files`. It automatically integrates with the planning system:
-
-### Automatic Planning Integration
-
-When you start a TDD+SDD workflow, this skill automatically:
-
-1. **Creates specialized phases in `task_plan.md`:**
-   - Phase 1: Spec Definition (SDD) - Write SPEC.yaml
-   - Phase 2: Test Generation (TDD Setup) - Generate test stubs
-   - Phase 3: Implementation (Red-Green-Refactor) - Write code iteratively
-   - Phase 4: Final Validation - Verify coverage and compliance
-
-2. **Updates `progress.md` after each step:**
-   - Test execution results with pass/fail counts
-   - Coverage percentage tracking
-   - Errors encountered and resolutions
-   - Current TDD state (RED/GREEN/REFACTOR)
-
-3. **Records decisions in `findings.md`:**
-   - Interface design rationale
-   - Contract definition reasoning
-   - Trade-offs in implementation
-   - Performance considerations
-
-### Dependency Declaration
-
+### Format 1: Standard (v1.0 Compatible)
 ```yaml
-# This skill requires planning-with-files
-metadata:
-  openclaw:
-    requires:
-      skills:
-        - planning-with-files >= 2.10.0
-    extends:
-      - planning-with-files
+specification:
+  name: "My Skill"
+  version: "1.0.0"
+  
+requirements:
+  - id: AUTH-001
+    description: "User can login"
+    scenarios:
+      - name: "valid login"
+        given: "valid credentials"
+        when: "user submits"
+        then: "login succeeds"
 ```
 
-### Example Integration Flow
+### Format 2: Delta Specs (NEW)
+```yaml
+specification:
+  name: "My Skill"
+  version: "2.0.0"
+  
+# Base specs (existing)
+requirements:
+  - id: AUTH-001
+    description: "User can login with password"
 
-```
-User: "Create a PDF OCR extraction skill"
-
-Agent workflow:
-1. planning-with-files.init_planning()
-   → Creates task_plan.md with generic phases
-
-2. tdd_sdd.init_workflow(skill_name="pdf-ocr")
-   → Enhances task_plan.md with TDD/SDD phases
-   → Creates SPEC.yaml template
-   → Updates progress.md: "Workflow initialized"
-
-3. tdd_sdd.create_spec(requirements="...")
-   → Writes SPEC.yaml
-   → Updates task_plan.md: Phase 1 complete
-   → Logs to findings.md: "Defined 3 interfaces"
-
-4. tdd_sdd.generate_tests()
-   → Creates tests/ directory structure
-   → Updates progress.md: "Generated 12 test cases"
-   → Updates task_plan.md: Phase 2 complete
-
-5. tdd_sdd.run_tests()
-   → Executes pytest (expect RED phase)
-   → Updates progress.md with results
-
-6. [Agent writes implementation code]
-
-7. tdd_sdd.run_tests()
-   → Executes pytest (expect GREEN phase)
-   → Updates progress.md: "All tests passing"
-
-8. tdd_sdd.validate_final()
-   → Final compliance check
-   → Updates task_plan.md: All phases complete
-   → Writes summary to findings.md
+# Changes (NEW)
+delta_specs:
+  added:
+    - id: AUTH-002
+      description: "User can login with OAuth"
+      scenarios:
+        - name: "oauth login"
+          given: "valid oauth token"
+          when: "user authenticates"
+          then: "login succeeds"
+  
+  modified:
+    - id: AUTH-001
+      description: "User can login with password or OAuth"
+      previous: "User can login with password"
+  
+  removed:
+    - id: AUTH-000
+      reason: "Deprecated legacy login"
 ```
 
 ## Available Functions
 
-### Spec Definition (SDD)
-
-#### `create_spec(skill_name: str, requirements: str, output_path: str = None) -> dict`
-Generate SPEC.yaml from natural language requirements.
-
-**Parameters:**
-- `skill_name`: Name of the skill to develop
-- `requirements`: User's description of skill functionality
-- `output_path`: Where to write SPEC.yaml (default: `./SPEC.yaml`)
-
-**Returns:**
-```json
-{
-  "spec_path": "./SPEC.yaml",
-  "interfaces_count": 3,
-  "scenarios_count": 5,
-  "status": "created"
-}
-```
-
-#### `validate_spec(spec_path: str) -> dict`
-Validate SPEC.yaml against SDD schema.
-
-**Parameters:**
-- `spec_path`: Path to SPEC.yaml file
-
-**Returns:**
-```json
-{
-  "is_valid": true,
-  "errors": [],
-  "warnings": ["Missing performance criteria"]
-}
-```
-
-### Test Generation (TDD)
-
-#### `generate_tests_from_spec(spec_path: str, output_dir: str = "tests") -> dict`
-Generate test files from SPEC.yaml.
-
-**Parameters:**
-- `spec_path`: Path to validated SPEC.yaml
-- `output_dir`: Directory for test files (default: `tests/`)
-
-**Returns:**
-```json
-{
-  "test_files": [
-    "tests/unit/test_service.py",
-    "tests/integration/test_collaboration.py",
-    "tests/acceptance/test_scenarios.py"
-  ],
-  "total_tests": 15,
-  "status": "generated"
-}
-```
-
-#### `run_tests(test_path: str = None, coverage: bool = True) -> dict`
-Run pytest with optional coverage reporting.
-
-**Parameters:**
-- `test_path`: Specific test file to run (default: all tests)
-- `coverage`: Enable coverage analysis (default: true)
-
-**Returns:**
-```json
-{
-  "passed": 12,
-  "failed": 3,
-  "coverage": 75.5,
-  "status": "completed",
-  "tdd_phase": "RED"
-}
-```
-
-#### `check_coverage(project_dir: str, threshold: float = 80.0) -> dict`
-Check if test coverage meets threshold.
-
-**Parameters:**
-- `project_dir`: Project root directory
-- `threshold`: Minimum acceptable coverage percentage (default: 80.0)
-
-**Returns:**
-```json
-{
-  "coverage": 85.5,
-  "threshold": 80.0,
-  "met": true,
-  "status": "acceptable"
-}
-```
-
-### Validation & Workflow
-
-#### `validate_implementation(spec_path: str, project_dir: str) -> dict`
-Validate that implementation meets SPEC requirements.
-
-**Parameters:**
-- `spec_path`: Path to SPEC.yaml
-- `project_dir`: Project root with implementation
-
-**Returns:**
-```json
-{
-  "spec_compliant": true,
-  "coverage_met": true,
-  "missing_implementations": [],
-  "status": "validated"
-}
-```
+### Core Functions
 
 #### `init_workflow(skill_name: str) -> dict`
-Initialize TDD+SDD workflow with planning integration.
+Initialize standard TDD+SDD workflow.
 
-**Parameters:**
-- `skill_name`: Name of the skill being developed
+#### `init_brownfield(project_dir: str) -> dict` ⭐ NEW
+Initialize for existing codebase. Detects current code and generates base specs.
 
-**Returns:**
-```json
-{
-  "task_plan_updated": true,
-  "spec_template_created": true,
-  "progress_initialized": true,
-  "status": "initialized"
-}
+#### `init_artifact_flow(skill_name: str) -> dict` ⭐ NEW
+Initialize with full artifact structure (proposal/specs/design/tasks).
+
+### Spec Functions
+
+#### `create_spec(skill_name: str, requirements: str) -> dict`
+Create SPEC.yaml from requirements.
+
+#### `create_delta_spec(change_name: str, added: list, modified: list, removed: list) -> dict` ⭐ NEW
+Create delta specs for brownfield changes.
+
+#### `validate_spec(spec_path: str) -> dict`
+Validate SPEC.yaml format.
+
+### Artifact Functions (NEW)
+
+#### `create_proposal(intent: str, scope: dict) -> dict`
+Create proposal.md with intent and scope.
+
+#### `create_specs_from_proposal() -> dict`
+Generate specs from proposal.
+
+#### `create_design_doc() -> dict`
+Create design.md with technical approach.
+
+#### `create_task_list() -> dict`
+Create tasks.md with implementation checklist.
+
+### Test Functions
+
+#### `generate_tests_from_spec(spec_path: str) -> dict`
+Generate test files from spec.
+
+#### `run_tests(test_path: str = None) -> dict`
+Run tests, returns RED/GREEN status.
+
+#### `check_coverage(threshold: float = 80.0) -> dict`
+Check coverage meets threshold.
+
+### Archive Functions (NEW)
+
+#### `archive_change(change_name: str = None) -> dict`
+Complete change, merge deltas, move to archive.
+
+#### `list_active_changes() -> list`
+List all active (non-archived) changes.
+
+#### `sync_specs_to_main() -> dict`
+Merge delta specs into main specs without archiving.
+
+## Project Structure
+
+### Standard Structure
+```
+my-skill/
+├── SPEC.yaml
+├── src/
+└── tests/
+    ├── unit/
+    ├── integration/
+    └── acceptance/
 ```
 
-#### `suggest_refactoring(project_dir: str) -> list`
-Analyze code and suggest refactorings.
-
-**Parameters:**
-- `project_dir`: Project root directory
-
-**Returns:**
-```json
-[
-  {
-    "file": "lib/service.py",
-    "line": 42,
-    "issue": "Function too long (50 lines)",
-    "suggestion": "Extract into smaller methods"
-  }
-]
+### With Artifacts (NEW)
+```
+my-skill/
+├── SPEC.yaml              # Current specs (source of truth)
+├── artifacts/             # Active change artifacts
+│   ├── proposal.md
+│   ├── design.md
+│   └── tasks.md
+├── changes/               # Change tracking (NEW)
+│   ├── add-feature-1/     # Active change
+│   │   ├── proposal.md
+│   │   ├── specs/
+│   │   ├── design.md
+│   │   └── tasks.md
+│   └── archive/           # Completed changes
+│       └── 2026-02-25-add-feature-1/
+├── src/
+└── tests/
 ```
 
-#### `finalize_workflow() -> dict`
-Complete workflow and generate final report.
+## Integration with TriadDev
 
-**Returns:**
-```json
-{
-  "all_phases_complete": true,
-  "final_coverage": 87.2,
-  "spec_compliance": "100%",
-  "status": "completed"
-}
+This skill is a core component of the **TriadDev Golden Triangle**:
+
+```
+📋 PLANNING → 📊 WORKFLOW → 🧪 TDD/SDD (this skill)
+     ↓            ↓              ↓
+task_plan.md   batches     SPEC.yaml + Tests
+```
+
+### TriadDev Integration Points
+
+1. **Planning Phase:** Creates task_plan.md with TDD/SDD phases
+2. **Workflow Phase:** task-workflow schedules spec→test→impl batches
+3. **TDD Phase:** This skill executes Red-Green-Refactor cycles
+
+### Example TriadDev Flow
+
+```bash
+# Initialize with TriadDev
+triadev init "My Skill" --template lib
+triadev plan --objectives "Design API,Write tests,Implement,Validate"
+
+# TDD+SDD workflow starts
+tdd_sdd.init_workflow(skill_name="my-skill")
+tdd_sdd.create_spec(requirements="...")
+
+# TriadDev schedules implementation batches
+triadev analyze
+triadev implement --all
+
+# Archive on completion
+tdd_sdd.archive_change()
+triadev run --complete
 ```
 
 ## Critical Rules
 
-### 1. Spec-First Development
-Never write implementation code before SPEC.yaml is complete and validated.
+### 1. Spec-First (Always)
+Never write implementation before spec is complete.
 
-### 2. Test-First Implementation
-Never write implementation before tests exist. The workflow enforces:
-- RED phase: Tests exist but fail
-- GREEN phase: Implementation makes tests pass
-- REFACTOR phase: Improve quality while tests pass
+### 2. Delta Specs for Changes (NEW)
+Use delta_specs when modifying existing code:
+```yaml
+delta_specs:
+  modified:
+    - id: EXISTING-001
+      description: "Updated behavior"
+```
 
-### 3. Coverage Threshold
-Minimum 80% code coverage required for workflow completion.
+### 3. Test Coverage Threshold
+Minimum 80% coverage required.
 
-### 4. Planning Integration
-Always update planning files after each phase:
-- `task_plan.md` - Phase completion status
-- `progress.md` - Test results and coverage
-- `findings.md` - Design decisions and trade-offs
+### 4. Archive on Completion (NEW)
+Always archive changes to maintain spec history:
+```python
+tdd_sdd.archive_change("feature-name")
+```
 
-### 5. State Tracking
-The workflow maintains internal state:
-- Current phase (SPEC/TEST/IMPL/VALIDATE)
-- TDD state (RED/GREEN/REFACTOR)
-- Coverage status
-- Validation results
-
-## Templates and References
-
-| Resource | Location | Purpose |
-|----------|----------|---------|
-| SPEC Template | `templates/sdd_spec_template.yaml` | Starting point for new specs |
-| Test Templates | `templates/test_*.py` | Test file templates |
-| Example Project | `examples/pdf-ocr-skill/` | Complete working example |
-| API Documentation | `references/api.md` | Detailed function reference |
+### 5. Brownfield Detection (NEW)
+For existing projects, always start with:
+```python
+tdd_sdd.init_brownfield(project_dir=".")
+```
 
 ## Anti-Patterns
 
 | Don't | Do Instead |
 |-------|------------|
-| Skip SPEC.yaml and start coding | Always define spec first |
-| Write all tests at once | Iterate through Red-Green-Refactor |
-| Ignore failing tests in RED phase | Document expected failures in progress.md |
-| Skip refactoring phase | Allocate time for code quality improvements |
-| Work without planning files | Let the skill create and update them |
-| Accept <80% coverage | Add tests until threshold is met |
+| Skip specs and code directly | Always define spec first |
+| Modify code without delta specs | Use delta_specs for changes |
+| Leave changes unarchived | Archive after completion |
+| Skip brownfield detection | Use init_brownfield for existing code |
+| Mix artifact and standard flow | Choose one approach per project |
 
-## Quick Start
+## Migration from v1.x
 
-```bash
-# Initialize workflow for a new skill
-tdd_sdd.init_workflow(skill_name="my-skill")
+v1.x SPEC.yaml files are **fully compatible** with v2.0. To use new features:
 
-# Create specification
-tdd_sdd.create_spec(
-    skill_name="my-skill",
-    requirements="Extract text from PDFs using OCR"
-)
+1. Add `delta_specs` section for changes
+2. Use `init_brownfield` for existing projects
+3. Try `init_artifact_flow` for complex features
 
-# Validate spec
-tdd_sdd.validate_spec(spec_path="./SPEC.yaml")
+No breaking changes - all v1.x workflows continue to work.
 
-# Generate tests
-tdd_sdd.generate_tests_from_spec(spec_path="./SPEC.yaml")
+## References
 
-# Run tests (RED phase)
-tdd_sdd.run_tests()
+| Resource | Purpose |
+|----------|---------|
+| OpenSpec | https://github.com/Fission-AI/OpenSpec - Inspiration for delta specs |
+| TriadDev | Golden Triangle workflow integration |
+| Examples | `examples/` directory for sample projects |
 
-# [Write implementation code]
+---
 
-# Run tests (GREEN phase)
-tdd_sdd.run_tests()
-
-# Validate final implementation
-tdd_sdd.validate_implementation(
-    spec_path="./SPEC.yaml",
-    project_dir="."
-)
-```
+**Start building with TDD+SDD v2.0 today!** 🚀
