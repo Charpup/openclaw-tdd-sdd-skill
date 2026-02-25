@@ -1,0 +1,61 @@
+{
+  "skill_name": "tdd-sdd-development",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a new SPEC.yaml for a skill called 'rate-limiter' that should limit API calls to 100 per minute per user, return 429 on overflow, and persist counters in Redis.",
+      "expected_output": "Generates a SPEC.yaml with specification block (name, version), requirements with IDs (RATE-001, RATE-002, RATE-003), Given/When/Then scenarios for each requirement covering the happy path, overflow case, and Redis persistence.",
+      "assertions": [
+        {
+          "text": "SPEC.yaml structure is present",
+          "type": "contains_any",
+          "values": ["specification:", "requirements:", "SPEC.yaml"]
+        },
+        {
+          "text": "Requirements use Given/When/Then scenarios",
+          "type": "llm_judge",
+          "criteria": "Requirements include scenarios with given/when/then format, covering the 100/min limit, 429 response, and Redis persistence cases."
+        },
+        {
+          "text": "Requirements have proper IDs",
+          "type": "llm_judge",
+          "criteria": "Each requirement has a unique ID like RATE-001 following the kebab-case convention."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I have an existing auth service that uses password login. I need to add OAuth support and remove the legacy token system. Create a delta spec for this change.",
+      "expected_output": "Creates a delta_specs section with added (OAuth support), modified (password login now also accepts OAuth), and removed (legacy token system) entries, all referencing existing requirement IDs.",
+      "assertions": [
+        {
+          "text": "Delta spec structure is present",
+          "type": "contains_any",
+          "values": ["delta_specs:", "added:", "modified:", "removed:"]
+        },
+        {
+          "text": "OAuth is in added section",
+          "type": "llm_judge",
+          "criteria": "The delta spec's 'added' section contains OAuth authentication requirement."
+        },
+        {
+          "text": "Legacy token removal is documented",
+          "type": "llm_judge",
+          "criteria": "The delta spec's 'removed' section references the legacy token requirement with a reason."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Fix a typo in the variable name 'counnter' → 'counter' in my Python script.",
+      "expected_output": "Simple text substitution, no TDD/SDD workflow needed. Skill should NOT trigger.",
+      "assertions": [
+        {
+          "text": "Does not invoke TDD/SDD workflow for trivial fix",
+          "type": "llm_judge",
+          "criteria": "The response performs the rename directly without creating SPEC.yaml, test stubs, or invoking TDD cycle."
+        }
+      ]
+    }
+  ]
+}
