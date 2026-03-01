@@ -1,0 +1,58 @@
+specification:
+  name: "Calculator Demo"
+  version: "1.0.0"
+  description: "A simple calculator demonstrating TDD+SDD workflow"
+
+requirements:
+  - id: CALC-001
+    description: "Calculator can add two numbers"
+    priority: high
+    scenarios:
+      - name: "add positive numbers"
+        given: "two positive numbers 2 and 3"
+        when: "add method is called"
+        then: "result should be 5"
+      - name: "add negative numbers"
+        given: "two negative numbers -2 and -3"
+        when: "add method is called"
+        then: "result should be -5"
+      - name: "add mixed numbers"
+        given: "one positive and one negative number 5 and -3"
+        when: "add method is called"
+        then: "result should be 2"
+
+  - id: CALC-002
+    description: "Calculator can subtract two numbers"
+    priority: high
+    scenarios:
+      - name: "subtract positive numbers"
+        given: "two numbers 5 and 3"
+        when: "subtract method is called"
+        then: "result should be 2"
+
+  - id: CALC-003
+    description: "Calculator can multiply two numbers"
+    priority: medium
+    scenarios:
+      - name: "multiply positive numbers"
+        given: "two numbers 4 and 3"
+        when: "multiply method is called"
+        then: "result should be 12"
+
+  - id: CALC-004
+    description: "Calculator can divide two numbers"
+    priority: medium
+    scenarios:
+      - name: "divide positive numbers"
+        given: "two numbers 12 and 4"
+        when: "divide method is called"
+        then: "result should be 3"
+      - name: "divide by zero"
+        given: "divisor is 0"
+        when: "divide method is called"
+        then: "should raise ValueError"
+
+tdd_config:
+  test_framework: pytest
+  coverage_threshold: 80
+  test_types: [unit, acceptance]
