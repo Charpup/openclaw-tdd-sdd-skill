@@ -1,6 +1,6 @@
 # TDD+SDD Development Skill for OpenClaw
 
-[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](https://github.com/Charpup/openclaw-tdd-sdd-skill/releases/tag/v2.1.0)
+[![Version](https://img.shields.io/badge/version-3.0.0-blue.svg)](https://github.com/Charpup/openclaw-tdd-sdd-skill/releases/tag/v2.1.0)
 [![OpenClaw Skill](https://img.shields.io/badge/OpenClaw-Skill-4CAF50.svg)](https://openclaw.ai)
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -15,7 +15,7 @@
 ```yaml
 # Skill identity (SKILL.md frontmatter)
 name: tdd-sdd-development
-version: "2.1.0"
+version: "3.0.0"
 triggers:
   - "TDD"
   - "SDD"
