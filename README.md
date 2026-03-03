@@ -5,6 +5,7 @@
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![evals](https://img.shields.io/badge/evals-3%20cases-blueviolet.svg)](evals/evals.json)
+[![Oathe Security](https://img.shields.io/badge/Oathe-87%2F100%20SAFE-brightgreen.svg)](https://oathe.ai/report/Charpup/openclaw-tdd-sdd-skill)
 
 > TDD+SDD dual-pyramid workflow with OpenSpec-inspired **delta specs** and **brownfield** support. Manages SPEC.yaml creation, test generation, Red-Green-Refactor cycles, and change tracking — for both new and existing OpenClaw skills.
 
