@@ -1,18 +1,7 @@
 ---
 name: tdd-sdd-development
-description: TDD+SDD dual-pyramid workflow with OpenSpec-inspired delta specs and brownfield support. Manages SPEC.yaml creation, test generation, Red-Green-Refactor cycles, and change tracking. Use when building production-ready skills requiring test coverage, maintainability, or working with existing codebases. Triggers on "TDD", "SDD", "test driven", "spec driven", "SPEC.yaml", "delta spec", "brownfield".
-metadata:
-  openclaw:
-    emoji: "🧪"
-    requires:
-      bins: ["python3", "pytest"]
-      env: []
-    os: ["linux", "macos", "windows"]
-    install:
-      - id: "pip-tdd-deps"
-        kind: "shell"
-        command: "pip3 install pytest pytest-cov pytest-asyncio pytest-mock pyyaml click rich"
-        label: "Install Python testing dependencies"
+description: >-
+  TDD+SDD dual-pyramid workflow with OpenSpec-inspired delta specs and brownfield support. Manages SPEC.yaml creation, test generation, Red-Green-Refactor cycles, and change tracking. Use when building production-ready skills requiring test coverage, maintainability, or working with existing codebases. Triggers on "TDD", "SDD", "test driven", "spec driven", "SPEC.yaml", "delta spec", "brownfield".
 ---
 
 # TDD+SDD Development Workflow v3.0
