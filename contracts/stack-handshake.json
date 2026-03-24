@@ -1,0 +1,14 @@
+{
+  "contractVersion": "1.0.0",
+  "component": "tdd-sdd-development",
+  "interface": {
+    "health": "python tools/run_tests.py --help",
+    "capabilities": [
+      "spec-validation",
+      "test-generation",
+      "unit|integration|acceptance test execution"
+    ],
+    "export_state": "python tools/stack_contract.py export --output <file>",
+    "import_state": "python tools/stack_contract.py import --input <file>"
+  }
+}
