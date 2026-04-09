@@ -1,0 +1,48 @@
+# SPEC.yaml — Specification Template
+# Copy to your project root and fill in requirements
+
+specification:
+  name: "Feature Name"
+  version: "1.0.0"
+  description: "What this feature does"
+
+tdd_config:
+  test_framework: pytest       # pytest | jest | go test
+  coverage_threshold: 80       # Minimum coverage % (hard requirement)
+  test_types:
+    - unit
+    - integration
+
+requirements:
+  - id: FEAT-001
+    description: "First requirement"
+    priority: high              # high | medium | low
+    scenarios:
+      - name: "happy path"
+        given: "precondition"
+        when: "action"
+        then: "expected result"
+      - name: "error case"
+        given: "invalid input"
+        when: "action"
+        then: "appropriate error"
+
+# Delta specs (for brownfield / existing code modifications)
+# Uncomment and use when modifying existing functionality:
+#
+# delta_specs:
+#   added:
+#     - id: FEAT-002
+#       description: "New capability"
+#       scenarios:
+#         - name: "new feature works"
+#           given: "..."
+#           when: "..."
+#           then: "..."
+#   modified:
+#     - id: FEAT-001
+#       description: "Updated behavior"
+#       previous: "Old behavior description"
+#   removed:
+#     - id: LEGACY-001
+#       reason: "Deprecated, replaced by FEAT-002"

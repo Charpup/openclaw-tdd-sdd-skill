@@ -2,58 +2,70 @@
   "skill_name": "tdd-sdd-development",
   "evals": [
     {
-      "id": 1,
-      "prompt": "Create a new SPEC.yaml for a skill called 'rate-limiter' that should limit API calls to 100 per minute per user, return 429 on overflow, and persist counters in Redis.",
-      "expected_output": "Generates a SPEC.yaml with specification block (name, version), requirements with IDs (RATE-001, RATE-002, RATE-003), Given/When/Then scenarios for each requirement covering the happy path, overflow case, and Redis persistence.",
+      "id": "spec-creation-01",
+      "prompt": "Create a SPEC.yaml for a rate-limiter module: 100 requests per minute per user, return 429 on overflow, persist counters in Redis with TTL.",
+      "expected_output": "Creates SPEC.yaml with specification block, tdd_config (coverage_threshold: 80), and requirements with Given-When-Then scenarios.",
       "assertions": [
         {
-          "text": "SPEC.yaml structure is present",
-          "type": "contains_any",
-          "values": ["specification:", "requirements:", "SPEC.yaml"]
+          "text": "SPEC.yaml created before any implementation",
+          "type": "llm_judge",
+          "criteria": "SPEC.yaml is created first, before any implementation code. Contains specification metadata and requirements with scenarios."
         },
         {
-          "text": "Requirements use Given/When/Then scenarios",
+          "text": "Requirements use Given-When-Then scenarios",
           "type": "llm_judge",
-          "criteria": "Requirements include scenarios with given/when/then format, covering the 100/min limit, 429 response, and Redis persistence cases."
-        },
-        {
-          "text": "Requirements have proper IDs",
-          "type": "llm_judge",
-          "criteria": "Each requirement has a unique ID like RATE-001 following the kebab-case convention."
+          "criteria": "Each requirement has scenarios in given/when/then format covering the rate limit, 429 response, and Redis persistence."
         }
       ]
     },
     {
-      "id": 2,
-      "prompt": "I have an existing auth service that uses password login. I need to add OAuth support and remove the legacy token system. Create a delta spec for this change.",
-      "expected_output": "Creates a delta_specs section with added (OAuth support), modified (password login now also accepts OAuth), and removed (legacy token system) entries, all referencing existing requirement IDs.",
+      "id": "tdd-red-phase-01",
+      "prompt": "I have this SPEC.yaml:\n```yaml\nspecification:\n  name: calculator\n  version: 1.0.0\ntdd_config:\n  coverage_threshold: 80\nrequirements:\n  - id: CALC-001\n    description: Add two numbers\n    scenarios:\n      - name: basic addition\n        given: two positive integers\n        when: add(2, 3) is called\n        then: returns 5\n```\nStart the TDD cycle for CALC-001.",
+      "expected_output": "Writes test files FIRST that call the not-yet-implemented add() function. Runs tests and shows them FAILING. Records red_evidence in .tdd-state.json. Does NOT write implementation code yet.",
       "assertions": [
         {
-          "text": "Delta spec structure is present",
-          "type": "contains_any",
-          "values": ["delta_specs:", "added:", "modified:", "removed:"]
+          "text": "Writes tests BEFORE implementation",
+          "type": "llm_judge",
+          "criteria": "Test files are created first. The response does NOT write the add() implementation at the same time as the tests."
         },
         {
-          "text": "OAuth is in added section",
+          "text": "Tests fail as expected (RED phase)",
           "type": "llm_judge",
-          "criteria": "The delta spec's 'added' section contains OAuth authentication requirement."
+          "criteria": "Tests are run and shown to fail (NotImplementedError, ImportError, or assertion failure). This failure is expected and acknowledged as the RED phase."
         },
         {
-          "text": "Legacy token removal is documented",
+          "text": "Records evidence in .tdd-state.json",
           "type": "llm_judge",
-          "criteria": "The delta spec's 'removed' section references the legacy token requirement with a reason."
+          "criteria": "The response creates or updates .tdd-state.json with red_evidence containing actual test failure output."
         }
       ]
     },
     {
-      "id": 3,
-      "prompt": "Fix a typo in the variable name 'counnter' → 'counter' in my Python script.",
-      "expected_output": "Simple text substitution, no TDD/SDD workflow needed. Skill should NOT trigger.",
+      "id": "delta-spec-01",
+      "prompt": "I have an existing auth service with password login (AUTH-001). Add OAuth support and remove the legacy cookie-based auth (AUTH-000). Create a delta spec.",
+      "expected_output": "Creates delta_specs section with added (OAuth), modified (login now supports OAuth too), and removed (legacy cookies) entries.",
       "assertions": [
         {
-          "text": "Does not invoke TDD/SDD workflow for trivial fix",
+          "text": "Delta spec has added/modified/removed sections",
+          "type": "contains_any",
+          "values": ["delta_specs", "added", "modified", "removed"]
+        },
+        {
+          "text": "Removed section has reason",
           "type": "llm_judge",
-          "criteria": "The response performs the rename directly without creating SPEC.yaml, test stubs, or invoking TDD cycle."
+          "criteria": "The removed section includes a reason explaining why the legacy auth is being removed."
+        }
+      ]
+    },
+    {
+      "id": "negative-01",
+      "prompt": "Fix a typo in the variable name 'counnter' to 'counter' in my Python script.",
+      "expected_output": "Simple rename, no TDD/SDD needed.",
+      "assertions": [
+        {
+          "text": "Does not trigger TDD workflow for trivial fix",
+          "type": "llm_judge",
+          "criteria": "The response performs the rename directly without SPEC.yaml, test stubs, or TDD cycle."
         }
       ]
     }
