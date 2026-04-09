@@ -1,703 +1,293 @@
 ---
 name: tdd-sdd-development
 description: >-
-  TDD+SDD dual-pyramid workflow with OpenSpec-inspired delta specs and brownfield support. Manages SPEC.yaml creation, test generation, Red-Green-Refactor cycles, and change tracking. Use when building production-ready skills requiring test coverage, maintainability, or working with existing codebases. Triggers on "TDD", "SDD", "test driven", "spec driven", "SPEC.yaml", "delta spec", "brownfield".
+  TRIGGER: TDD, SDD, test driven, spec driven, SPEC.yaml, RED GREEN REFACTOR,
+  test coverage, delta spec, brownfield testing, write tests first.
+  TDD+SDD dual-pyramid development workflow. SDD drives WHAT to build (SPEC.yaml),
+  TDD drives HOW to verify it (RED-GREEN-REFACTOR with file-based evidence gates).
+  Enforces spec-first development and mandatory test-failure evidence before
+  implementation. 80% coverage hard threshold.
+  Use for any code that needs tests, specs, or long-term maintainability.
+  NOT for trivial fixes (< 5 lines) or documentation-only changes.
 ---
 
-# TDD+SDD Development Workflow v3.0
+# TDD+SDD Development v3.1
 
-**Version:** 3.0.0 | **Homepage:** https://github.com/Charpup/openclaw-tdd-sdd-skill
+Two frameworks, one workflow:
+- **SDD (Spec-Driven Development)**: Define WHAT to build in SPEC.yaml before writing code
+- **TDD (Test-Driven Development)**: Verify HOW it works via RED -> GREEN -> REFACTOR with evidence
 
-Develop OpenClaw skills using Test-Driven Development (TDD) and Spec-Driven Development (SDD) best practices. Now with **full TDD automation**: RED-GREEN-REFACTOR state machine, automated test generation, coverage tracking, and comprehensive reporting.
+## The Two Pyramids
 
-## What's New in v3.0
+```
+    SDD Pyramid                    TDD Pyramid
+    (What to build)                (How to verify)
 
-### 🆕 RED-GREEN-REFACTOR Engine
-Full TDD cycle automation with state tracking:
-```python
-from tdd.engine import red_phase, green_phase, refactor_phase
-
-# RED: Generate tests and expect failure
-result = red_phase("SPEC.yaml")
-# Output: 🔴 RED Phase - 4 tests failing as expected
-
-# GREEN: Implement and verify tests pass
-result = green_phase("tests/")
-# Output: 🟢 GREEN Phase - 4 tests passing
-
-# REFACTOR: Improve code quality
-result = refactor_phase("src/", "tests/")
-# Output: 🟡 REFACTOR Phase - 92% coverage, 2 suggestions
+      /SPEC.yaml\                  /Acceptance\
+     /  scenarios  \              / Integration \
+    / requirements  \            /  Unit Tests   \
+   ──────────────────           ──────────────────
+   Defines behavior             Proves behavior
 ```
 
-### 🆕 Automated Test Generation
-Generate complete pytest tests from SPEC.yaml:
-```python
-from tdd.test_generator import generate_tests_from_spec
+SDD answers "what does this do?" -- TDD answers "does it actually work?"
 
-result = generate_tests_from_spec("SPEC.yaml", "tests/")
-# Generates: test_calc_001.py, test_calc_002.py, test_acceptance.py
-```
+## When to Use
 
-### 🆕 Coverage Analysis
-Integrated coverage checking with threshold validation:
-```python
-from tdd.coverage import check_coverage
+**Always use for:**
+- New features or modules
+- Refactoring with behavior preservation
+- Any code needing long-term maintenance
+- Brownfield modifications (delta specs)
 
-result = check_coverage("src/", threshold=80.0)
-# Output: Coverage 85% - Meets threshold ✅
-```
-
-### 🆕 TDD Reporting
-Beautiful progress reports and status tracking:
-```python
-from tdd.reporter import generate_cycle_report
-
-report = generate_cycle_report(cycle_data)
-# Generates formatted markdown report
-```
-
-## When to Use This Skill
-
-**ALWAYS use for:**
-- Creating a new OpenClaw skill from scratch
-- Adding features to **existing** skills (brownfield)
-- Refactoring with test coverage
-- Any skill requiring long-term maintenance
-- Following strict TDD workflow
-
-**Use TDD Module when:**
-- You want automated RED-GREEN-REFACTOR tracking
-- You need test generation from specifications
-- You require coverage threshold enforcement
-- You want detailed TDD progress reports
-
-**Use DELTA SPECS when:**
-- Modifying existing functionality
-- Deprecating old features
-- Migrating from old patterns
-
-**Use ARTIFACT FLOW when:**
-- Complex features needing design docs
-- Team collaboration
-- Requirements exploration needed
-
-**SKIP for:**
-- Simple bug fixes (< 5 lines)
+**Skip for:**
+- Simple bug fixes (< 5 lines, root cause known)
 - Documentation-only changes
-- Quick prototypes
+- Quick prototypes explicitly marked as throwaway
 
-## Core Workflows
+## The TDD Enforcement Problem
 
-### Workflow A: TDD Cycle (RED-GREEN-REFACTOR)
-Traditional TDD with full automation:
+AI agents naturally skip the RED phase -- they want to solve the problem immediately.
+This skill uses **file-based evidence gates** to enforce the full TDD cycle.
 
-```
-SPEC.yaml → Generate Tests → RED → Implement → GREEN → REFACTOR → Archive
-                ↑                                              ↓
-                └──────────── Coverage Check ←─────────────────┘
-```
+See [references/tdd-anti-patterns.md](references/tdd-anti-patterns.md) for why this matters.
 
-### Workflow B: Brownfield (Existing Project)
-Delta specs for existing codebases:
+---
 
-```
-Detect Code → Generate Base Specs → Delta Specs → Tests → Implement → Archive
-```
+## Core Workflow
 
-### Workflow C: Artifact Flow (Complex)
-OpenSpec-inspired full workflow:
+### Phase 0: Spec Creation (SDD)
 
-```
-proposal.md → specs/ → design.md → tasks.md → Tests → RED → GREEN → Archive
-```
+**Before any code exists**, create `SPEC.yaml`:
 
-## Quick Start
+1. Define the specification name, version, description
+2. List requirements with unique IDs (FEAT-001, AUTH-001, etc.)
+3. Write scenarios in Given-When-Then format for each requirement
+4. Set tdd_config: test framework, coverage threshold (minimum 80%)
 
-### TDD Cycle Example
-```python
-# Import TDD module
-from tdd.engine import TDDEngine, red_phase, green_phase, refactor_phase
-from tdd.test_generator import generate_tests_from_spec
+See [references/spec-format.md](references/spec-format.md) for format details.
+Use [templates/SPEC.yaml](templates/SPEC.yaml) as a starting point.
 
-# Initialize TDD engine
-engine = TDDEngine(project_path=".")
-engine.start_cycle("CALC-001")
+**Gate: No SPEC.yaml -> no code allowed.**
 
-# RED Phase: Generate tests and run (expecting failure)
-red_result = red_phase("SPEC.yaml", output_dir="tests/")
-print(red_result["message"])  # 🔴 RED Phase - 4 tests failing
+### Phase 1: RED -- Write Failing Tests
 
-# ... Implement minimal code to make tests pass ...
+For each requirement in SPEC.yaml:
 
-# GREEN Phase: Verify tests pass
-green_result = green_phase("tests/")
-print(green_result["message"])  # 🟢 GREEN Phase - 4 tests passing
+1. Create test file(s) in `tests/` based on the scenarios
+2. Write test functions that call the not-yet-implemented code
+3. Run the tests: `pytest tests/ -v`
+4. **They MUST fail** (NotImplementedError, ImportError, or assertion failures)
+5. Record the evidence in `.tdd-state.json`:
 
-# REFACTOR Phase: Improve code quality
-refactor_result = refactor_phase("src/", "tests/", coverage_threshold=80.0)
-print(refactor_result["message"])  # 🟡 REFACTOR Phase complete
-
-# Complete cycle
-engine.complete_cycle()
-```
-
-### Test Generation Example
-```python
-from tdd.test_generator import generate_tests_from_spec, generate_unit_test
-
-# Generate all tests from SPEC.yaml
-result = generate_tests_from_spec("SPEC.yaml", "tests/")
-print(f"Generated {len(result['generated_files'])} test files")
-
-# Or generate individual tests
-requirement = {
-    "id": "AUTH-001",
-    "description": "User can login",
-    "scenarios": [...]
-}
-test_code = generate_unit_test(requirement, module_name="auth")
-```
-
-### Test Runner Example
-```python
-from tdd.test_runner import run_tests, parse_pytest_output
-
-# Run tests with coverage
-results = run_tests("tests/", coverage=True)
-print(f"Tests: {results['passed']}/{results['total']} passed")
-print(f"Coverage: {results['coverage']:.1f}%")
-
-# Check for failures
-if results['failed'] > 0:
-    for failure in results['failures']:
-        print(f"❌ {failure['test']}: {failure['message']}")
-```
-
-### Coverage Checking Example
-```python
-from tdd.coverage import check_coverage, CoverageAnalyzer
-
-# Simple coverage check
-result = check_coverage("src/", threshold=80.0)
-if result['meets_threshold']:
-    print(f"✅ Coverage {result['coverage']:.1f}% meets threshold")
-else:
-    print(f"❌ Coverage {result['coverage']:.1f}% below threshold")
-
-# Detailed analysis
-analyzer = CoverageAnalyzer("src/")
-report = analyzer.check(threshold=80.0)
-for file in report.files:
-    print(f"{file.path}: {file.percentage:.1f}%")
-```
-
-## SPEC.yaml Formats
-
-### Format 1: Standard (v1.0 Compatible)
-```yaml
-specification:
-  name: "My Skill"
-  version: "1.0.0"
-  
-requirements:
-  - id: AUTH-001
-    description: "User can login"
-    scenarios:
-      - name: "valid login"
-        given: "valid credentials"
-        when: "user submits"
-        then: "login succeeds"
-```
-
-### Format 2: With TDD Config (v3.0)
-```yaml
-specification:
-  name: "My Skill"
-  version: "1.0.0"
-  
-tdd_config:
-  test_framework: pytest
-  coverage_threshold: 80
-  test_types: [unit, integration]
-  
-requirements:
-  - id: AUTH-001
-    description: "User can login"
-    priority: high
-    scenarios:
-      - name: "valid login"
-        given: "valid credentials"
-        when: "user submits"
-        then: "login succeeds"
-```
-
-### Format 3: Delta Specs
-```yaml
-specification:
-  name: "My Skill"
-  version: "2.0.0"
-  
-# Base specs (existing)
-requirements:
-  - id: AUTH-001
-    description: "User can login with password"
-
-# Changes
-delta_specs:
-  added:
-    - id: AUTH-002
-      description: "User can login with OAuth"
-      scenarios:
-        - name: "oauth login"
-          given: "valid oauth token"
-          when: "user authenticates"
-          then: "login succeeds"
-  
-  modified:
-    - id: AUTH-001
-      description: "User can login with password or OAuth"
-      previous: "User can login with password"
-  
-  removed:
-    - id: AUTH-000
-      reason: "Deprecated legacy login"
-```
-
-## TDD Module API Reference
-
-### Engine Module (`tdd.engine`)
-
-#### `TDDEngine(project_path: str)`
-RED-GREEN-REFACTOR state machine.
-
-**Methods:**
-- `start_cycle(spec_id: str) -> TDDCycle` - Start new TDD cycle
-- `transition_to(state: TDDState, notes: str) -> bool` - Transition state
-- `can_transition_to(state: TDDState) -> bool` - Check valid transition
-- `complete_cycle() -> TDDCycle` - Complete current cycle
-- `get_current_phase() -> PhaseRecord` - Get current phase info
-
-#### `red_phase(spec_path: str, output_dir: str) -> dict`
-Run RED phase - generate tests and expect failure.
-
-**Returns:**
-```python
+```json
 {
-    "status": "RED",
-    "tests_generated": ["tests/test_req_001.py", ...],
-    "test_results": {"passed": 0, "failed": 4, ...},
-    "message": "RED phase confirmed: 4 tests failing as expected"
+  "spec_id": "FEAT-001",
+  "phase": "red",
+  "red_evidence": {
+    "timestamp": "2026-04-09T10:00:00",
+    "test_command": "pytest tests/ -v",
+    "tests_total": 4,
+    "tests_failed": 4,
+    "output_snapshot": "FAILED tests/test_auth.py::test_login - NotImplementedError"
+  }
 }
 ```
 
-#### `green_phase(test_path: str, impl_path: str) -> dict`
-Run GREEN phase - verify tests pass.
+**Gate: No red_evidence in .tdd-state.json -> cannot write implementation code.**
 
-**Returns:**
-```python
+The `red_evidence.output_snapshot` must be actual test runner output, not fabricated.
+
+### Phase 2: GREEN -- Minimal Implementation
+
+Now (and ONLY now) write implementation code:
+
+1. Write the **minimum code** to make all failing tests pass
+2. Do not add features beyond what the tests require
+3. Run tests again: `pytest tests/ -v`
+4. **All tests must pass**
+5. Record evidence:
+
+```json
 {
-    "status": "GREEN",
-    "tests_green": True,
-    "test_results": {"passed": 4, "failed": 0, ...},
-    "message": "GREEN phase achieved: 4 tests passing"
+  "phase": "green",
+  "green_evidence": {
+    "timestamp": "2026-04-09T10:30:00",
+    "tests_total": 4,
+    "tests_passed": 4
+  }
 }
 ```
 
-#### `refactor_phase(impl_path: str, test_path: str, coverage_threshold: float) -> dict`
-Run REFACTOR phase - improve code quality.
+**Gate: Any test still failing -> stay in GREEN, keep fixing.**
 
-**Returns:**
-```python
+### Phase 3: REFACTOR -- Quality + Coverage
+
+With all tests green, improve code quality:
+
+1. Refactor implementation (extract functions, improve naming, remove duplication)
+2. Run tests after each refactor step -- they must stay green
+3. Check coverage: `python scripts/check_coverage.py --threshold 80`
+4. Record coverage:
+
+```json
 {
-    "status": "REFACTOR",
-    "tests_green": True,
-    "coverage_met": True,
-    "coverage_result": {"coverage": 85.0, "meets_threshold": True},
-    "suggestions": ["Consider breaking down long function..."],
-    "message": "REFACTOR phase: 1 suggestion(s) available"
+  "phase": "refactor",
+  "coverage": {
+    "percentage": 85.0,
+    "meets_threshold": true
+  }
 }
 ```
 
-### Test Generator Module (`tdd.test_generator`)
+**Gate: Coverage < 80% -> add more tests, do not proceed.**
 
-#### `generate_tests_from_spec(spec_path: str, output_dir: str) -> dict`
-Generate pytest tests from SPEC.yaml.
+### Phase 4: Complete -- Archive the Cycle
 
-**Returns:**
-```python
+1. Update `.tdd-state.json` phase to "complete"
+2. Move cycle data to `cycle_history` array
+3. If more requirements remain in SPEC.yaml, start a new RED phase for the next one
+4. When all requirements are done, archive changes
+
+---
+
+## TDD State Machine
+
+```
+red --> green --> refactor --> complete
+ ^                                |
+ '-------- next requirement ------'
+```
+
+**Rules:**
+- Transitions are one-way: red -> green -> refactor -> complete
+- Cannot skip phases (no red -> refactor)
+- Cannot go backward (no green -> red) except starting a new cycle
+- Each SPEC requirement gets its own cycle
+
+## The .tdd-state.json File
+
+This file is the TDD evidence ledger. It lives in the project root.
+
+```json
 {
-    "status": "success",
-    "generated_files": ["tests/test_req_001.py", ...],
-    "requirements_count": 4,
-    "scenarios_count": 8,
-    "message": "Generated 5 test files"
+  "spec_id": "FEAT-001",
+  "phase": "red",
+  "red_evidence": {
+    "timestamp": "ISO-8601",
+    "test_command": "the exact command run",
+    "tests_total": 4,
+    "tests_failed": 4,
+    "output_snapshot": "first 200 chars of failure output"
+  },
+  "green_evidence": {
+    "timestamp": "ISO-8601",
+    "tests_total": 4,
+    "tests_passed": 4
+  },
+  "coverage": {
+    "percentage": 85.0,
+    "meets_threshold": true
+  },
+  "cycle_history": [
+    {
+      "spec_id": "FEAT-000",
+      "completed_at": "ISO-8601",
+      "coverage": 92.0
+    }
+  ]
 }
 ```
 
-#### `generate_unit_test(requirement: dict, module_name: str) -> str`
-Generate single unit test from requirement.
+**Ownership:** Only tdd-sdd reads and writes this file. Other skills do not access it.
 
-#### `generate_acceptance_test(requirement: dict, scenario: dict, module_name: str) -> str`
-Generate acceptance test from GIVEN-WHEN-THEN scenario.
+---
 
-### Test Runner Module (`tdd.test_runner`)
+## Brownfield Development (Delta Specs)
 
-#### `run_tests(test_path: str, coverage: bool) -> dict`
-Run pytest and return results.
+For existing codebases:
 
-**Returns:**
-```python
-{
-    "status": "passed",
-    "total": 10,
-    "passed": 10,
-    "failed": 0,
-    "skipped": 0,
-    "coverage": 85.5,
-    "failures": [],
-    "output": "..."
-}
-```
+1. Assess existing code -> generate base SPEC.yaml with current requirements
+2. Add `delta_specs` section for changes (added/modified/removed)
+3. Run TDD cycle only for delta items
+4. Existing tests must remain green throughout
+5. Archive deltas when complete
 
-#### `parse_pytest_output(output: str) -> dict`
-Parse pytest output for status and metrics.
+See [references/delta-spec-guide.md](references/delta-spec-guide.md) for details.
 
-### Coverage Module (`tdd.coverage`)
+## Integration with TriaDev
 
-#### `check_coverage(source_path: str, threshold: float) -> dict`
-Check if coverage meets threshold.
+When used as part of the Golden Triangle:
 
-**Returns:**
-```python
-{
-    "status": "pass",
-    "coverage": 85.0,
-    "threshold": 80.0,
-    "meets_threshold": True,
-    "files": [
-        {"path": "src/module.py", "percentage": 90.0, ...}
-    ]
-}
-```
+**What tdd-sdd reads:**
+- `triadev-handoff.json` -> `scheduling.batches` (which task to implement next)
+- `triadev-handoff.json` -> `implementation.current` (current task ID)
 
-#### `CoverageAnalyzer(source_path: str)`
-Coverage analysis class with detailed reporting.
+**What tdd-sdd writes:**
+- `triadev-handoff.json` -> `implementation.completed` (append task ID on completion)
+- `triadev-handoff.json` -> `implementation.spec_path` (path to SPEC.yaml)
+- `triadev-handoff.json` -> `implementation.tdd_state_path` (path to .tdd-state.json)
 
-### Reporter Module (`tdd.reporter`)
+**What tdd-sdd does NOT do:**
+- Does not create or modify `task_plan.md` (that's planning-with-files)
+- Does not schedule tasks (that's task-workflow)
+- Does not make routing decisions (that's triadev)
 
-#### `generate_cycle_report(cycle_data: dict) -> str`
-Generate formatted TDD cycle report.
+## Helper Scripts
 
-#### `generate_status_line(state: str, tests_passed: int, tests_total: int, coverage: float) -> str`
-Generate single-line status summary.
+| Script | Purpose | Usage |
+|--------|---------|-------|
+| `scripts/run_tests.py` | Run pytest with categorization | `python scripts/run_tests.py [unit\|integration\|all]` |
+| `scripts/check_coverage.py` | Check coverage vs threshold | `python scripts/check_coverage.py --threshold 80` |
 
-**Example:**
-```
-🟢 GREEN    | Tests: 4/4 | Coverage: 85.0%
-```
-
-## Available Functions (Legacy API)
-
-### Core Functions
-
-#### `init_workflow(skill_name: str) -> dict`
-Initialize standard TDD+SDD workflow.
-
-#### `init_brownfield(project_dir: str) -> dict`
-Initialize for existing codebase.
-
-#### `init_artifact_flow(skill_name: str) -> dict`
-Initialize with full artifact structure.
-
-### Spec Functions
-
-#### `create_spec(skill_name: str, requirements: str) -> dict`
-Create SPEC.yaml from requirements.
-
-#### `create_delta_spec(change_name: str, added: list, modified: list, removed: list) -> dict`
-Create delta specs for brownfield changes.
-
-#### `validate_spec(spec_path: str) -> dict`
-Validate SPEC.yaml format.
-
-### Artifact Functions
-
-#### `create_proposal(intent: str, scope: dict) -> dict`
-Create proposal.md with intent and scope.
-
-#### `create_specs_from_proposal() -> dict`
-Generate specs from proposal.
-
-#### `create_design_doc() -> dict`
-Create design.md with technical approach.
-
-#### `create_task_list() -> dict`
-Create tasks.md with implementation checklist.
-
-### Test Functions (Legacy)
-
-#### `generate_tests_from_spec(spec_path: str) -> dict`
-Generate test files from spec.
-
-#### `run_tests(test_path: str = None) -> dict`
-Run tests, returns RED/GREEN status.
-
-#### `check_coverage(threshold: float = 80.0) -> dict`
-Check coverage meets threshold.
-
-### Archive Functions
-
-#### `archive_change(change_name: str = None) -> dict`
-Complete change, merge deltas, move to archive.
-
-#### `list_active_changes() -> list`
-List all active (non-archived) changes.
-
-#### `sync_specs_to_main() -> dict`
-Merge delta specs into main specs without archiving.
+Scripts are **optional** -- Claude can run pytest directly. Use scripts for
+formatted output or when integrating with CI.
 
 ## Project Structure
 
-### Standard Structure
 ```
-my-skill/
-├── SPEC.yaml
-├── src/
-│   └── __init__.py
-└── tests/
-    ├── __init__.py
-    ├── unit/
-    ├── integration/
-    └── acceptance/
-```
-
-### With TDD Module
-```
-my-skill/
-├── SPEC.yaml              # Current specs (source of truth)
+project/
+├── SPEC.yaml              # Specification (source of truth)
+├── .tdd-state.json        # TDD cycle evidence
 ├── src/                   # Implementation code
-│   ├── __init__.py
-│   └── module.py
-├── tests/                 # Generated and custom tests
-│   ├── __init__.py
-│   ├── test_req_001.py    # Auto-generated from SPEC
-│   └── test_acceptance.py # Auto-generated scenarios
-├── .tdd_reports/          # TDD cycle reports
-│   └── tdd_report_20260301_120000.md
-└── .coverage/             # Coverage data
+├── tests/
+│   ├── unit/              # Unit tests
+│   ├── integration/       # Integration tests
+│   └── acceptance/        # Acceptance tests
+└── changes/               # Brownfield change tracking
+    ├── active/
+    └── archive/
 ```
 
-### With Artifacts
-```
-my-skill/
-├── SPEC.yaml              # Current specs (source of truth)
-├── artifacts/             # Active change artifacts
-│   ├── proposal.md
-│   ├── design.md
-│   └── tasks.md
-├── changes/               # Change tracking
-│   ├── add-feature-1/     # Active change
-│   │   ├── proposal.md
-│   │   ├── specs/
-│   │   ├── design.md
-│   │   └── tasks.md
-│   └── archive/           # Completed changes
-│       └── 2026-02-25-add-feature-1/
-├── src/
-└── tests/
-```
+## Self-Check Before Writing Implementation
 
-## Integration with TriadDev
+Before writing ANY code in `src/`:
 
-This skill is a core component of the **TriadDev Golden Triangle**:
+- [ ] SPEC.yaml exists with requirements defined?
+- [ ] Test files exist in `tests/` for the current requirement?
+- [ ] Tests have been run and FAILED (red_evidence in .tdd-state.json)?
+- [ ] Failures are because code doesn't exist yet (NOT test syntax errors)?
 
-```
-📋 PLANNING → 📊 WORKFLOW → 🧪 TDD/SDD (this skill)
-     ↓            ↓              ↓
-task_plan.md   batches     SPEC.yaml + Tests
-```
-
-### TriadDev Integration Points
-
-1. **Planning Phase:** Creates task_plan.md with TDD/SDD phases
-2. **Workflow Phase:** task-workflow schedules spec→test→impl batches
-3. **TDD Phase:** This skill executes Red-Green-Refactor cycles
-
-### Example TriadDev Flow
-
-```bash
-# Initialize with TriadDev
-triadev init "My Skill" --template lib
-triadev plan --objectives "Design API,Write tests,Implement,Validate"
-
-# TDD+SDD workflow starts
-python -c "
-from tdd.engine import TDDEngine, red_phase, green_phase
-from tdd.test_generator import generate_tests_from_spec
-
-# RED Phase
-red_phase('SPEC.yaml', 'tests/')
-
-# ... implement ...
-
-# GREEN Phase
-green_phase('tests/')
-"
-
-# TriadDev schedules implementation batches
-triadev analyze
-triadev implement --all
-
-# Archive on completion
-tdd_sdd.archive_change("feature-name")
-triadev run --complete
-```
-
-## Critical Rules
-
-### 1. Spec-First (Always)
-Never write implementation before spec is complete.
-
-### 2. RED Phase Validation
-Always verify tests fail before implementing:
-```python
-result = red_phase("SPEC.yaml")
-assert result["status"] == "RED"  # Tests should fail first
-```
-
-### 3. GREEN Phase Validation
-Always verify tests pass after implementing:
-```python
-result = green_phase("tests/")
-assert result["status"] == "GREEN"  # Tests should pass
-```
-
-### 4. Coverage Threshold
-Minimum 80% coverage required:
-```python
-result = check_coverage("src/", threshold=80.0)
-assert result["meets_threshold"]  # Must meet threshold
-```
-
-### 5. Delta Specs for Changes
-Use delta_specs when modifying existing code:
-```yaml
-delta_specs:
-  modified:
-    - id: EXISTING-001
-      description: "Updated behavior"
-```
-
-### 6. Archive on Completion
-Always archive changes to maintain spec history:
-```python
-tdd_sdd.archive_change("feature-name")
-```
-
-### 7. Brownfield Detection
-For existing projects, always start with:
-```python
-tdd_sdd.init_brownfield(project_dir=".")
-```
+If any answer is NO -> go back to the appropriate phase.
 
 ## Anti-Patterns
 
 | Don't | Do Instead |
-|-------|------------|
-| Skip specs and code directly | Always define spec first |
-| Skip RED phase (tests must fail first) | Always run red_phase() before implementing |
-| Ignore failing tests in GREEN | Fix all tests before REFACTOR |
-| Modify code without delta specs | Use delta_specs for changes |
-| Leave changes unarchived | Archive after completion |
-| Skip brownfield detection | Use init_brownfield for existing code |
-| Mix artifact and standard flow | Choose one approach per project |
-| Ignore coverage warnings | Address coverage gaps in REFACTOR |
+|-------|-----------|
+| Write implementation before tests | Write tests first, see them fail (RED) |
+| Write tests that pass immediately | Tests must fail first -- that's the point |
+| Skip RED phase because "tests are obvious" | Write them anyway; obvious tests catch non-obvious bugs |
+| Test implementation details | Test behavior (Given-When-Then from SPEC) |
+| Write all tests for all requirements at once | One requirement per TDD cycle |
+| Accept coverage below 80% | Add tests until threshold is met |
+| Fabricate red_evidence output | Run actual tests; paste actual output |
+| Skip SPEC.yaml for "simple" features | If it needs tests, it needs a spec |
 
-## Example Project
+## Critical Rules (Non-Negotiable)
 
-See `examples/tdd-demo/` for a complete working example:
-
-```
-examples/tdd-demo/
-├── SPEC.yaml           # Calculator specification
-├── src/
-│   └── calculator.py   # Implementation
-└── tests/
-    └── test_calculator.py  # Generated + custom tests
-```
-
-Run the example:
-```bash
-cd examples/tdd-demo
-python -m pytest tests/ -v --cov=src
-```
-
-## Migration from v2.x
-
-v2.x SPEC.yaml files are **fully compatible** with v3.0. To use new TDD features:
-
-1. Import the TDD module:
-```python
-from tdd.engine import red_phase, green_phase, refactor_phase
-from tdd.test_generator import generate_tests_from_spec
-from tdd.test_runner import run_tests
-from tdd.coverage import check_coverage
-```
-
-2. Use the new TDD workflow:
-```python
-# Old way (still works)
-tdd_sdd.generate_tests_from_spec("SPEC.yaml")
-
-# New way with full TDD
-def run_tdd_cycle(spec_path):
-    # RED
-    red_result = red_phase(spec_path)
-    if red_result["status"] != "RED":
-        raise Exception("Expected RED phase")
-    
-    # ... implement ...
-    
-    # GREEN
-    green_result = green_phase("tests/")
-    if green_result["status"] != "GREEN":
-        raise Exception("Expected GREEN phase")
-    
-    # REFACTOR
-    refactor_result = refactor_phase("src/", "tests/")
-    return refactor_result
-```
-
-No breaking changes - all v2.x workflows continue to work.
-
-## References
-
-| Resource | Purpose |
-|----------|---------|
-| OpenSpec | https://github.com/Fission-AI/OpenSpec - Inspiration for delta specs |
-| TriadDev | Golden Triangle workflow integration |
-| Examples | `examples/` directory for sample projects |
-| pytest | https://docs.pytest.org/ - Testing framework |
-| pytest-cov | https://pytest-cov.readthedocs.io/ - Coverage plugin |
-
-## TDD Module Structure
-
-```
-tdd-sdd-skill/
-├── src/
-│   └── tdd/
-│       ├── __init__.py          # Module exports
-│       ├── engine.py            # RED-GREEN-REFACTOR state machine
-│       ├── test_generator.py    # Test generation from SPEC.yaml
-│       ├── test_runner.py       # pytest execution
-│       ├── coverage.py          # Coverage analysis
-│       └── reporter.py          # Progress reports
-├── examples/
-│   └── tdd-demo/                # Working example
-└── SKILL.md                     # This documentation
-```
-
----
-
-**Start building with TDD+SDD v3.0 today!** 🚀
+1. **Spec-first**: SPEC.yaml before any code
+2. **RED before GREEN**: Tests must fail before implementation begins
+3. **Evidence-based**: .tdd-state.json must have real test output
+4. **80% coverage**: Hard floor, no exceptions
+5. **One cycle per requirement**: Don't batch TDD cycles
+6. **Archive on complete**: Move finished changes to archive/

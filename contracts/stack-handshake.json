@@ -1,14 +1,28 @@
 {
-  "contractVersion": "1.0.0",
+  "contractVersion": "2.0.0",
   "component": "tdd-sdd-development",
+  "role": "TDD+SDD dual-pyramid development engine",
   "interface": {
-    "health": "python tools/run_tests.py --help",
+    "reads": {
+      "triadev-handoff.json": ["scheduling.batches", "implementation.current"]
+    },
+    "writes": {
+      "triadev-handoff.json": ["implementation.completed", "implementation.spec_path", "implementation.tdd_state_path"]
+    },
+    "owns": ["SPEC.yaml", ".tdd-state.json"],
     "capabilities": [
-      "spec-validation",
-      "test-generation",
-      "unit|integration|acceptance test execution"
+      "spec-driven-development",
+      "red-green-refactor-cycle",
+      "file-based-tdd-evidence",
+      "delta-spec-brownfield",
+      "coverage-threshold-enforcement"
     ],
-    "export_state": "python tools/stack_contract.py export --output <file>",
-    "import_state": "python tools/stack_contract.py import --input <file>"
+    "scripts": {
+      "run_tests": "python scripts/run_tests.py",
+      "check_coverage": "python scripts/check_coverage.py --threshold 80"
+    }
+  },
+  "dependencies": {
+    "planning-with-files": ">=2.10.0"
   }
 }
