@@ -144,10 +144,11 @@ With all tests green, improve code quality:
 
 ### Phase 4: Complete -- Archive the Cycle
 
-1. Update `.tdd-state.json` phase to "complete"
-2. Move cycle data to `cycle_history` array
-3. If more requirements remain in SPEC.yaml, start a new RED phase for the next one
-4. When all requirements are done, archive changes
+1. **Before** marking the cycle complete, invoke [`verification-before-completion`](../verification-before-completion/SKILL.md) skill to verify: (a) `.tdd-state.json` has non-null `red_evidence` + `green_evidence` + `coverage.percentage >= 80`, (b) re-read `.tdd-state.json` after any write
+2. Update `.tdd-state.json` phase to "complete"
+3. Move cycle data to `cycle_history` array
+4. If more requirements remain in SPEC.yaml, start a new RED phase for the next one
+5. When all requirements are done, archive changes
 
 ---
 
