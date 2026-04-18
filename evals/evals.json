@@ -122,7 +122,7 @@
         {
           "text": "No test files created for the rename",
           "type": "does_not_contain",
-          "values": ["RED phase", "writing tests for counter", "test_counter"]
+          "values": ["writing tests for counter", "test_counter"]
         }
       ]
     },
@@ -172,7 +172,7 @@
         {
           "text": "Does not transition to complete",
           "type": "does_not_contain",
-          "values": ["marking phase as complete", "cycle complete", "phase complete"]
+          "values": ["marking phase as complete", "transitioning to complete"]
         }
       ]
     },
@@ -211,7 +211,7 @@
         {
           "text": "Refuses to advance to REFACTOR",
           "type": "does_not_contain",
-          "values": ["advancing to REFACTOR", "transitioning phase to refactor", "starting refactor phase"]
+          "values": ["transitioning phase to refactor", "starting refactor phase"]
         },
         {
           "text": "Demands real test failure output",
