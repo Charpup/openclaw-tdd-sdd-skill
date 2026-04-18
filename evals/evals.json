@@ -1,5 +1,20 @@
 {
   "skill_name": "tdd-sdd-development",
+  "eval_schema_version": "2.0",
+  "assertion_types_supported": {
+    "llm_judge": "Subjective check. Use sparingly.",
+    "contains_any": "Deterministic. Response contains at least one value.",
+    "contains_all": "Deterministic. Response contains every value.",
+    "does_not_contain": "Deterministic. Response contains no value from values[].",
+    "file_exists": "Deterministic. File at path exists.",
+    "no_file_exists": "Deterministic. File at path does NOT exist.",
+    "json_path_equals": "Deterministic. JSON at file has path equal to expected.",
+    "json_path_in": "Deterministic. JSON at file has path whose value is in values[].",
+    "json_path_exists": "Deterministic. JSON at file has the path (non-null).",
+    "yaml_path_equals": "Deterministic. YAML at file has path equal to expected.",
+    "yaml_path_exists": "Deterministic. YAML at file has the path (non-null).",
+    "sequence_order": "Deterministic. Response contains all values in given order."
+  },
   "evals": [
     {
       "id": "spec-creation-01",
@@ -7,12 +22,30 @@
       "expected_output": "Creates SPEC.yaml with specification block, tdd_config (coverage_threshold: 80), and requirements with Given-When-Then scenarios.",
       "assertions": [
         {
-          "text": "SPEC.yaml created before any implementation",
-          "type": "llm_judge",
-          "criteria": "SPEC.yaml is created first, before any implementation code. Contains specification metadata and requirements with scenarios."
+          "text": "SPEC.yaml created",
+          "type": "file_exists",
+          "path": "SPEC.yaml"
         },
         {
-          "text": "Requirements use Given-When-Then scenarios",
+          "text": "Coverage threshold is 80",
+          "type": "yaml_path_equals",
+          "file": "SPEC.yaml",
+          "path": "$.tdd_config.coverage_threshold",
+          "equals": 80
+        },
+        {
+          "text": "Requirements present",
+          "type": "yaml_path_exists",
+          "file": "SPEC.yaml",
+          "path": "$.requirements"
+        },
+        {
+          "text": "No implementation code written yet",
+          "type": "no_file_exists",
+          "path": "src/rate_limiter.py"
+        },
+        {
+          "text": "Uses Given-When-Then scenarios",
           "type": "llm_judge",
           "criteria": "Each requirement has scenarios in given/when/then format covering the rate limit, 429 response, and Redis persistence."
         }
@@ -24,19 +57,27 @@
       "expected_output": "Writes test files FIRST that call the not-yet-implemented add() function. Runs tests and shows them FAILING. Records red_evidence in .tdd-state.json. Does NOT write implementation code yet.",
       "assertions": [
         {
-          "text": "Writes tests BEFORE implementation",
-          "type": "llm_judge",
-          "criteria": "Test files are created first. The response does NOT write the add() implementation at the same time as the tests."
+          "text": "Creates .tdd-state.json",
+          "type": "file_exists",
+          "path": ".tdd-state.json"
         },
         {
-          "text": "Tests fail as expected (RED phase)",
-          "type": "llm_judge",
-          "criteria": "Tests are run and shown to fail (NotImplementedError, ImportError, or assertion failure). This failure is expected and acknowledged as the RED phase."
+          "text": "Phase is red",
+          "type": "json_path_equals",
+          "file": ".tdd-state.json",
+          "path": "$.phase",
+          "equals": "red"
         },
         {
-          "text": "Records evidence in .tdd-state.json",
+          "text": "red_evidence is recorded",
+          "type": "json_path_exists",
+          "file": ".tdd-state.json",
+          "path": "$.red_evidence.output_snapshot"
+        },
+        {
+          "text": "Test file created before implementation",
           "type": "llm_judge",
-          "criteria": "The response creates or updates .tdd-state.json with red_evidence containing actual test failure output."
+          "criteria": "Test file (e.g. tests/test_calculator.py) is created. No src/calculator.py is created yet with actual implementation logic — the implementation file either doesn't exist or contains only stubs/NotImplementedError."
         }
       ]
     },
@@ -46,14 +87,20 @@
       "expected_output": "Creates delta_specs section with added (OAuth), modified (login now supports OAuth too), and removed (legacy cookies) entries.",
       "assertions": [
         {
-          "text": "Delta spec has added/modified/removed sections",
-          "type": "contains_any",
-          "values": ["delta_specs", "added", "modified", "removed"]
+          "text": "delta_specs section exists",
+          "type": "yaml_path_exists",
+          "file": "SPEC.yaml",
+          "path": "$.delta_specs"
         },
         {
-          "text": "Removed section has reason",
+          "text": "All three delta categories present",
+          "type": "contains_all",
+          "values": ["added", "modified", "removed"]
+        },
+        {
+          "text": "Removal has reason documented",
           "type": "llm_judge",
-          "criteria": "The removed section includes a reason explaining why the legacy auth is being removed."
+          "criteria": "The removed section for AUTH-000 includes a reason field explaining why legacy cookies are being removed."
         }
       ]
     },
@@ -63,9 +110,113 @@
       "expected_output": "Simple rename, no TDD/SDD needed.",
       "assertions": [
         {
-          "text": "Does not trigger TDD workflow for trivial fix",
+          "text": "No SPEC.yaml created",
+          "type": "no_file_exists",
+          "path": "SPEC.yaml"
+        },
+        {
+          "text": "No .tdd-state.json created",
+          "type": "no_file_exists",
+          "path": ".tdd-state.json"
+        },
+        {
+          "text": "No test files created for the rename",
+          "type": "does_not_contain",
+          "values": ["writing tests for counter", "test_counter"]
+        }
+      ]
+    },
+    {
+      "id": "brownfield-init-01",
+      "prompt": "I have an existing Python module src/user_service.py with functions: create_user(name, email), get_user(user_id), delete_user(user_id). It has no tests and no spec. Initialize brownfield TDD: generate base SPEC.yaml capturing current behavior, then I'll add delta specs for new features.",
+      "expected_output": "Reads existing src/user_service.py. Generates a base SPEC.yaml with requirements derived from existing function signatures. No delta_specs yet (those come next). Does NOT modify existing code.",
+      "assertions": [
+        {
+          "text": "Base SPEC.yaml created",
+          "type": "file_exists",
+          "path": "SPEC.yaml"
+        },
+        {
+          "text": "Specification block present",
+          "type": "yaml_path_exists",
+          "file": "SPEC.yaml",
+          "path": "$.specification"
+        },
+        {
+          "text": "Requirements reflect existing functions",
+          "type": "contains_all",
+          "values": ["create_user", "get_user", "delete_user"]
+        },
+        {
+          "text": "Mentions brownfield or base spec",
+          "type": "contains_any",
+          "values": ["brownfield", "base spec", "existing behavior", "current behavior"]
+        }
+      ]
+    },
+    {
+      "id": "coverage-gate-01",
+      "prompt": "I've finished GREEN phase. Tests pass. Here's the current .tdd-state.json:\n```json\n{\"spec_id\": \"CALC-001\", \"phase\": \"refactor\", \"red_evidence\": {\"tests_total\": 4, \"tests_failed\": 4}, \"green_evidence\": {\"tests_total\": 4, \"tests_passed\": 4}, \"coverage\": {\"percentage\": 65.0, \"meets_threshold\": false}}\n```\n\nCan I mark this cycle complete?",
+      "expected_output": "Refuses to mark complete because coverage is 65% (below 80% threshold). Instructs to add more tests. Does NOT transition phase to 'complete'.",
+      "assertions": [
+        {
+          "text": "Refuses to complete",
+          "type": "contains_any",
+          "values": ["cannot mark complete", "below threshold", "coverage below", "add more tests", "not allowed"]
+        },
+        {
+          "text": "Mentions the 80% threshold",
+          "type": "contains_any",
+          "values": ["80%", "80 percent", "coverage threshold", "coverage_threshold"]
+        },
+        {
+          "text": "Does not transition to complete",
+          "type": "does_not_contain",
+          "values": ["marking phase as complete", "transitioning to complete"]
+        }
+      ]
+    },
+    {
+      "id": "state-machine-skip-red-01",
+      "prompt": "I want to skip RED and go straight to GREEN — I know what the tests should look like, I'll write implementation and tests together. Here's my SPEC.yaml:\n```yaml\nspecification:\n  name: mymodule\n  version: 1.0.0\ntdd_config:\n  coverage_threshold: 80\nrequirements:\n  - id: MOD-001\n    description: Process data\n    scenarios: [{given: 'input', when: 'process() called', then: 'returns output'}]\n```\n\nJust write the implementation code.",
+      "expected_output": "Refuses to skip RED phase. Enforces RED before GREEN. Explains why RED-first is required (file-based evidence gate).",
+      "assertions": [
+        {
+          "text": "Refuses to skip RED",
+          "type": "contains_any",
+          "values": ["must write tests first", "RED phase is required", "cannot skip RED", "evidence gate", "RED before GREEN"]
+        },
+        {
+          "text": "Explains the reason",
+          "type": "contains_any",
+          "values": ["evidence", "fabricate", "actual test output", "enforces", "non-negotiable"]
+        },
+        {
+          "text": "Does not write src/ implementation without tests",
           "type": "llm_judge",
-          "criteria": "The response performs the rename directly without SPEC.yaml, test stubs, or TDD cycle."
+          "criteria": "The response does NOT proceed to write the implementation file. It stops and requires RED phase to happen first."
+        }
+      ]
+    },
+    {
+      "id": "green-without-red-evidence-01",
+      "prompt": "Here's a broken .tdd-state.json:\n```json\n{\"spec_id\": \"FEAT-001\", \"phase\": \"green\", \"red_evidence\": null, \"green_evidence\": {\"tests_total\": 3, \"tests_passed\": 3}}\n```\n\nAdvance to REFACTOR.",
+      "expected_output": "Detects missing red_evidence and refuses to advance. Demands RED phase evidence (actual failing test output) before GREEN can be trusted.",
+      "assertions": [
+        {
+          "text": "Detects missing red_evidence",
+          "type": "contains_any",
+          "values": ["red_evidence is null", "missing red_evidence", "no RED evidence", "RED phase not recorded"]
+        },
+        {
+          "text": "Refuses to advance to REFACTOR",
+          "type": "does_not_contain",
+          "values": ["transitioning phase to refactor", "starting refactor phase"]
+        },
+        {
+          "text": "Demands real test failure output",
+          "type": "llm_judge",
+          "criteria": "The response requires actual red_evidence with output_snapshot before allowing any forward transition. Does not allow the state to proceed with null red_evidence."
         }
       ]
     }
